@@ -1,7 +1,6 @@
 # Hash Forge
 
-**Version**: 0.1.0
-**Description**: A simple tool to generate secure hashes.
+A simple tool to generate secure hashes.
 
 ## Overview
 
@@ -57,8 +56,6 @@ print(is_valid)  # Outputs: True
 needs_rehash = hash_manager.needs_rehash(hashed_value)
 print(needs_rehash)  # Outputs: False
 ```
-
-
 
 > **Note:** The first hasher provided during initialization of `HashManager` will be the **preferred hasher** used for hashing operations, though any available hasher can be used for verification.
 
