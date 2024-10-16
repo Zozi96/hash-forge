@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Optional
 from contextlib import suppress
 
 from hash_forge.protocols import PHasher
@@ -11,21 +10,21 @@ class Argon2Hasher(PHasher):
 
     def __init__(
         self,
-        time_cost: Optional[int] = None,
-        salt_len: Optional[int] = None,
-        memory_cost: Optional[int] = None,
-        parallelism: Optional[int] = None,
-        hash_len: Optional[int] = None,
+        time_cost: int | None = None,
+        salt_len: int | None = None,
+        memory_cost: int | None = None,
+        parallelism: int | None = None,
+        hash_len: int | None = None,
     ) -> None:
         """
         Initialize the Argon2Hasher with optional parameters for hashing configuration.
 
         Args:
-            time_cost (Optional[int]): The time cost parameter for Argon2. Defaults to None.
-            salt_len (Optional[int]): The length of the salt. Defaults to None.
-            memory_cost (Optional[int]): The memory cost parameter for Argon2. Defaults to None.
-            parallelism (Optional[int]): The degree of parallelism for Argon2. Defaults to None.
-            hash_len (Optional[int]): The length of the resulting hash. Defaults to None.
+            time_cost (int | None): The time cost parameter for Argon2. Defaults to None.
+            salt_len (int | None): The length of the salt. Defaults to None.
+            memory_cost (int | None): The memory cost parameter for Argon2. Defaults to None.
+            parallelism (int | None): The degree of parallelism for Argon2. Defaults to None.
+            hash_len (int | None): The length of the resulting hash. Defaults to None.
         """
         self.argon2 = self.load_library(self.library_module)
         self.time_cost = time_cost
