@@ -1,0 +1,21 @@
+[project]
+name = "hash-forge"
+version = "0.1.0"
+description = "This is a simple tool to generate secure hashes."
+readme = "README.md"
+authors = [{ name = "Zozi", email = "zozi.fer96@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3.3",
+]
+
+[project.optional-dependencies]
+bcrypt = ["bcrypt==4.2.0"]
+argon2 = ["argon2-cffi==23.1.0"]
