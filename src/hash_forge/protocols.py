@@ -11,14 +11,51 @@ class PHasher(Protocol):
 
     @abstractmethod
     def hash(self, _string: str, /) -> str:
+        """
+        Computes the hash of the given string.
+
+        Args:
+            _string (str): The input string to be hashed.
+
+        Returns:
+            str: The resulting hash as a string.
+
+        Raises:
+            NotImplementedError: This method should be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def verify(self, _string: str, _hashed_string: str, /) -> bool:
+        """
+        Verify if the provided string matches the hashed string.
+
+        Args:
+            _string (str): The original string to verify.
+            _hashed_string (str): The hashed string to compare against.
+
+        Returns:
+            bool: True if the original string matches the hashed string, False otherwise.
+
+        Raises:
+            NotImplementedError: This method should be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def needs_rehash(self, _hashed_string: str, /) -> bool:
+        """
+        Determine if a hashed string needs to be rehashed.
+
+        Args:
+            _hashed_string (str): The hashed string to check.
+
+        Returns:
+            bool: True if the hashed string needs to be rehashed, False otherwise.
+
+        Raises:
+            NotImplementedError: This method should be implemented by subclasses.
+        """
         raise NotImplementedError
 
     def load_library(self, name: str) -> ModuleType:

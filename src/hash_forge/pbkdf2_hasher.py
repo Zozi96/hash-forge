@@ -31,7 +31,7 @@ class PBKDF2Sha256Hasher(PHasher):
         hashed: str = binascii.hexlify(dk).decode('ascii')
         return '%s$%s$%s$%s' % (self.algorithm, self.iterations, salt, hashed)
 
-    def verify(self, _string: str, _hashed_string: str) -> bool:
+    def verify(self, _string: str, _hashed_string: str, /) -> bool:
         """
         Verifies if a given string matches the hashed string using PBKDF2 algorithm.
 
@@ -51,7 +51,7 @@ class PBKDF2Sha256Hasher(PHasher):
             return hashed == hashed_input
         return False
 
-    def needs_rehash(self, _hashed_string: str) -> bool:
+    def needs_rehash(self, _hashed_string: str, /) -> bool:
         """
         Determines if a hashed string needs to be rehashed based on the number of iterations.
 

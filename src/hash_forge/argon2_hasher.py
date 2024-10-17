@@ -36,7 +36,7 @@ class Argon2Hasher(PHasher):
 
     __slots__ = ('argon2', 'time_cost', 'memory_cost', 'parallelism', 'hash_len', 'salt_len')
 
-    def hash(self, _string: str) -> str:
+    def hash(self, _string: str, /) -> str:
         """
         Hashes the given string using Argon2 algorithm.
 
@@ -49,7 +49,7 @@ class Argon2Hasher(PHasher):
 
         return self.ph.hash(_string)
 
-    def verify(self, _string: str, _hashed_string: str) -> bool:
+    def verify(self, _string: str, _hashed_string: str, /) -> bool:
         """
         Verifies if a given string matches the provided hashed string using Argon2.
 
@@ -64,7 +64,7 @@ class Argon2Hasher(PHasher):
             return self.ph.verify(_hashed_string, _string)
         return False
 
-    def needs_rehash(self, _hashed_string: str) -> bool:
+    def needs_rehash(self, _hashed_string: str, /) -> bool:
         """
         Determines if the given hashed string needs to be rehashed based on the current time cost.
 

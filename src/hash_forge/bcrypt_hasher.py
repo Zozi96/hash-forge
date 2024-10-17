@@ -11,6 +11,12 @@ class BCryptSha256Hasher(PHasher):
     library_module: str = 'bcrypt'
 
     def __init__(self, rounds: int = 12) -> None:
+        """
+        Initializes the BcryptHasher with the specified number of rounds.
+
+        Args:
+            rounds (int, optional): The number of rounds to use for hashing. Defaults to 12.
+        """
         self.bcrypt = self.load_library(self.library_module)
         self.rounds = rounds
 
