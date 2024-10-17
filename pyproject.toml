@@ -4,6 +4,19 @@ version = "0.3.0"
 description = "This is a simple tool to generate secure hashes."
 readme = "README.md"
 authors = [{ name = "Zozi", email = "zozi.fer96@gmail.com" }]
+license = "MIT"
+keywords = ["hash", "security", "bcrypt", "argon2", "pbkdf2", "scrypt"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+urls = { "Homepage" = "https://github.com/Zozi96/hash-forge", "Repository" = "https://github.com/Zozi96/hash-forge", "Issue Tracker" = "https://github.com/Zozi96/hash-forge/issues" }
 requires-python = ">=3.10"
 dependencies = []
 
@@ -12,9 +25,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv]
-dev-dependencies = [
-    "pytest>=8.3.3",
-]
+dev-dependencies = ["pytest>=8.3.3"]
 
 [project.optional-dependencies]
 bcrypt = ["bcrypt==4.2.0"]
