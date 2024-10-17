@@ -1,6 +1,6 @@
 # Hash Forge
 
-A simple tool to generate secure hashes.
+**Hash Forge** is a lightweight Python library designed to simplify the process of hashing and verifying data using a variety of secure hashing algorithms.
 
 ## Overview
 
