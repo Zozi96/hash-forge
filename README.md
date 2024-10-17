@@ -4,11 +4,11 @@ A simple tool to generate secure hashes.
 
 ## Overview
 
-Hash Forge is a flexible and secure hash management tool that supports multiple hashing algorithms. This tool allows you to hash and verify data using popular hash algorithms, making it easy to integrate into projects where password hashing or data integrity is essential. The library supports bcrypt, scrypt, Argon2, and PBKDF2 out of the box, and you can add more hashers as needed.
+Hash Forge is a flexible and secure hash management tool that supports multiple hashing algorithms. This tool allows you to hash and verify data using popular hash algorithms, making it easy to integrate into projects where password hashing or data integrity is essential. The library supports bcrypt, Scrypt, Argon2, and PBKDF2 out of the box, and you can add more hashers as needed.
 
 ## Features
 
-- **Multiple Hashing Algorithms**: Supports bcrypt, scrypt, Argon2, and PBKDF2.
+- **Multiple Hashing Algorithms**: Supports bcrypt, Scrypt, Argon2, and PBKDF2.
 - **Hashing and Verification**: Easily hash strings and verify their integrity.
 - **Rehash Detection**: Automatically detects if a hash needs to be rehashed based on outdated parameters or algorithms.
 - **Flexible Integration**: Extendible to add new hashing algorithms as needed.
@@ -66,7 +66,7 @@ Currently supported hashers:
 - **PBKDF2** (default)
 - **bcrypt**
 - **Argon2**
-- **scrypt**
+- **Scrypt**
 
 You can initialize `HashManager` with one or more hashers:
 
