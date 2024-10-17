@@ -29,7 +29,7 @@ class PBKDF2Sha256Hasher(PHasher):
         salt: str = binascii.hexlify(os.urandom(self.salt)).decode('ascii')
         dk: bytes = hashlib.pbkdf2_hmac('sha256', _string.encode(), salt.encode(), self.iterations)
         hashed: str = binascii.hexlify(dk).decode('ascii')
-        return f'{self.algorithm}${self.iterations}${salt}${hashed}'
+        return '%s$%s$%s$%s' % (self.algorithm, self.iterations, salt, hashed)
 
     def verify(self, _string: str, _hashed_string: str) -> bool:
         """
