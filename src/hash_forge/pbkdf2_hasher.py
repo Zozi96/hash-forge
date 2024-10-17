@@ -7,7 +7,7 @@ from contextlib import suppress
 from hash_forge.protocols import PHasher
 
 
-class PBKDF2Hasher(PHasher):
+class PBKDF2Sha256Hasher(PHasher):
     algorithm = 'pbkdf2_sha256'
 
     def __init__(self, iterations: int = 100_000, salt: int = 16) -> None:

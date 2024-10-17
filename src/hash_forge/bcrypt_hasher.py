@@ -6,7 +6,7 @@ from contextlib import suppress
 from hash_forge.protocols import PHasher
 
 
-class BCryptHasher(PHasher):
+class BCryptSha256Hasher(PHasher):
     algorithm = 'bcrypt_sha256'
     library_module: str = 'bcrypt'
 

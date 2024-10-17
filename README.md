@@ -4,11 +4,11 @@ A simple tool to generate secure hashes.
 
 ## Overview
 
-Hash Forge is a flexible and secure hash management tool that supports multiple hashing algorithms. This tool allows you to hash and verify data using popular hash algorithms, making it easy to integrate into projects where password hashing or data integrity is essential. The library supports bcrypt, Argon2, and PBKDF2 out of the box, and you can add more hashers as needed.
+Hash Forge is a flexible and secure hash management tool that supports multiple hashing algorithms. This tool allows you to hash and verify data using popular hash algorithms, making it easy to integrate into projects where password hashing or data integrity is essential. The library supports bcrypt, scrypt, Argon2, and PBKDF2 out of the box, and you can add more hashers as needed.
 
 ## Features
 
-- **Multiple Hashing Algorithms**: Supports bcrypt, Argon2, and PBKDF2.
+- **Multiple Hashing Algorithms**: Supports bcrypt, scrypt, Argon2, and PBKDF2.
 - **Hashing and Verification**: Easily hash strings and verify their integrity.
 - **Rehash Detection**: Automatically detects if a hash needs to be rehashed based on outdated parameters or algorithms.
 - **Flexible Integration**: Extendible to add new hashing algorithms as needed.
@@ -66,15 +66,17 @@ Currently supported hashers:
 - **PBKDF2** (default)
 - **bcrypt**
 - **Argon2**
+- **scrypt**
 
 You can initialize `HashManager` with one or more hashers:
 
 ```python
 from hash_forge import HashManager
-from hash_forge.pbkdf2_hasher import PBKDF2Hasher
-from hash_forge.bcrypt_hasher import BCryptHasher
+from hash_forge.pbkdf2_hasher import PBKDF2Sha256Hasher
+from hash_forge.bcrypt_hasher import BCryptSha256Hasher
+from hash_forge.scrypt_hasher import ScryptHasher
 
-hash_manager = HashManager(PBKDF2Hasher(iterations=150_000), BCryptHasher())
+hash_manager = HashManager(PBKDF2Sha256Hasher(iterations=150_000), BCryptSha256Hasher(), ScryptHasher())
 ```
 
 ### Verifying a Hash

@@ -1,11 +1,10 @@
 import pytest
 
 from hash_forge import HashManager
-from hash_forge.protocols import PHasher
-from hash_forge.pbkdf2_hasher import PBKDF2Hasher
-
-from hash_forge.bcrypt_hasher import BCryptHasher
+from hash_forge.pbkdf2_hasher import PBKDF2Sha256Hasher
+from hash_forge.bcrypt_hasher import BCryptSha256Hasher
 from hash_forge.argon2_hasher import Argon2Hasher
+from hash_forge.scrypt_hasher import ScryptHasher
 
 
 @pytest.fixture
@@ -19,7 +18,7 @@ def hash_manager_instance() -> HashManager:
     Returns:
         HashManager: An instance of HashManager initialized with the provided hashers.
     """
-    return HashManager(PBKDF2Hasher(iterations=150_000), BCryptHasher(), Argon2Hasher())
+    return HashManager(PBKDF2Sha256Hasher(iterations=150_000), BCryptSha256Hasher(), Argon2Hasher(), ScryptHasher())
 
 
 def test_hash_with_preferred_hasher(hash_manager_instance: HashManager) -> None:
@@ -107,7 +106,7 @@ def test_needs_rehash_true_due_to_iterations(hash_manager_instance: HashManager)
     Args:
         hash_manager_instance (HashManager): An instance of the HashManager class.
     """
-    old_pbkdf2_hasher = PBKDF2Hasher(iterations=100_000)
+    old_pbkdf2_hasher = PBKDF2Sha256Hasher(iterations=100_000)
     old_hashed = old_pbkdf2_hasher.hash("HashManagerTestData!")
     assert hash_manager_instance.needs_rehash(old_hashed) is True
 
