@@ -1,6 +1,6 @@
 [project]
 name = "hash-forge"
-version = "1.0.1"
+version = "1.0.2"
 description = "Hash Forge is a lightweight Python library designed to simplify the process of hashing and verifying data using a variety of secure hashing algorithms."
 readme = "README.md"
 authors = [{ name = "Zozi", email = "zozi.fer96@gmail.com" }]

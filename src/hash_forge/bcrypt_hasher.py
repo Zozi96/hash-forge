@@ -7,7 +7,7 @@ from hash_forge.protocols import PHasher
 
 
 class BCryptSha256Hasher(PHasher):
-    algorithm = 'bcrypt_sha256'
+    algorithm: str = 'bcrypt_sha256'
     library_module: str = 'bcrypt'
 
     def __init__(self, rounds: int = 12) -> None:
