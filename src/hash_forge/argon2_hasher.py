@@ -5,7 +5,7 @@ from hash_forge.protocols import PHasher
 
 
 class Argon2Hasher(PHasher):
-    algorithm = '$argon2id'
+    algorithm: str = '$argon2id'
     library_module: str = 'argon2'
 
     def __init__(

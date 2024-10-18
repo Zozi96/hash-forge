@@ -9,7 +9,7 @@ from hash_forge.protocols import PHasher
 
 
 class ScryptHasher(PHasher):
-    algorithm = 'scrypt'
+    algorithm: str = 'scrypt'
 
     def __init__(
         self,
