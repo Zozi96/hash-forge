@@ -1,4 +1,5 @@
 import secrets
+
 from hash_forge.constants import RANDOM_STRING_CHARS
 
 

@@ -47,7 +47,7 @@ class HashManager:
         Raises:
             IndexError: If the hashed string does not contain a valid algorithm identifier.
         """
-        hasher = self._get_hasher_by_hash(hashed_string)
+        hasher: PHasher | None = self._get_hasher_by_hash(hashed_string)
         if hasher is None:
             return False
         return hasher.verify(string, hashed_string)

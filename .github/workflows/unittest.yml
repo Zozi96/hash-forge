@@ -1,4 +1,4 @@
-name: Run Pytest with uv on Multiple Python Versions
+name: Unittests
 
 on:
   pull_request:
