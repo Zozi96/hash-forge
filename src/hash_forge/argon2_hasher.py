@@ -5,7 +5,7 @@ from hash_forge.protocols import PHasher
 
 
 class Argon2Hasher(PHasher):
-    algorithm: str = '$argon2id'
+    algorithm: str = 'argon2'
     library_module: str = 'argon2'
 
     def __init__(
@@ -47,7 +47,7 @@ class Argon2Hasher(PHasher):
             str: The formatted hash string containing the algorithm, time cost, memory cost, parallelism, salt, and hashed value.
         """
 
-        return self.ph.hash(_string)
+        return self.algorithm + self.ph.hash(_string)
 
     def verify(self, _string: str, _hashed_string: str, /) -> bool:
         """
@@ -61,7 +61,8 @@ class Argon2Hasher(PHasher):
             bool: True if the string matches the hashed string, False otherwise.
         """
         with suppress(self.argon2.exceptions.VerifyMismatchError, self.argon2.exceptions.InvalidHash, Exception):
-            return self.ph.verify(_hashed_string, _string)
+            _, _hashed_string = _hashed_string.split('$', 1)
+            return self.ph.verify('$' + _hashed_string, _string)
         return False
 
     def needs_rehash(self, _hashed_string: str, /) -> bool:
@@ -75,7 +76,8 @@ class Argon2Hasher(PHasher):
             bool: True if the hashed string needs to be rehashed, False otherwise.
         """
         with suppress(self.argon2.exceptions.InvalidHash, Exception):
-            return self.ph.check_needs_rehash(_hashed_string)
+            _, _hashed_string = _hashed_string.split('$', 1)
+            return self.ph.check_needs_rehash('$' + _hashed_string)
         return False
 
     def _get_hasher(self):

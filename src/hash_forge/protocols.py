@@ -1,13 +1,13 @@
 import importlib
 
 from types import ModuleType
-from typing import Protocol
+from typing import Protocol, ClassVar
 from abc import abstractmethod
 
 
 class PHasher(Protocol):
-    algorithm: str
-    library_module: str | None = None
+    algorithm: ClassVar[str]
+    library_module: ClassVar[str | None] = None
 
     @abstractmethod
     def hash(self, _string: str, /) -> str:
