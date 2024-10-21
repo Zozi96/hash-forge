@@ -5,7 +5,7 @@ description = "Hash Forge is a lightweight Python library designed to simplify t
 readme = "README.md"
 authors = [{ name = "Zozi", email = "zozi.fer96@gmail.com" }]
 license = "MIT"
-keywords = ["hash", "security", "bcrypt", "argon2", "pbkdf2", "scrypt"]
+keywords = ["hash", "security", "bcrypt", "argon2", "pbkdf2", "scrypt", "blake2"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
