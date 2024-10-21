@@ -2,6 +2,7 @@ import binascii
 import hashlib
 
 from contextlib import suppress
+from typing import Callable
 
 from hash_forge.protocols import PHasher
 
@@ -9,6 +10,7 @@ from hash_forge.protocols import PHasher
 class BCryptSha256Hasher(PHasher):
     algorithm: str = 'bcrypt_sha256'
     library_module: str = 'bcrypt'
+    digest: Callable | None = hashlib.sha256
 
     def __init__(self, rounds: int = 12) -> None:
         """
@@ -32,8 +34,10 @@ class BCryptSha256Hasher(PHasher):
         Returns:
             str: The formatted hash string containing the algorithm, rounds, salt, and hashed value.
         """
-        sha256_hashed_hex: bytes = binascii.hexlify(hashlib.sha256(_string.encode()).digest())
-        bcrypt_hashed: bytes = self.bcrypt.hashpw(sha256_hashed_hex, self.bcrypt.gensalt(self.rounds))
+        encoded_string: bytes = _string.encode()
+        if self.digest is not None:
+            encoded_string = self._get_hexdigest(_string, self.digest)
+        bcrypt_hashed: bytes = self.bcrypt.hashpw(encoded_string, self.bcrypt.gensalt(self.rounds))
         return self.algorithm + bcrypt_hashed.decode("ascii")
 
     def verify(self, _string: str, _hashed_string: str, /) -> bool:
@@ -47,11 +51,16 @@ class BCryptSha256Hasher(PHasher):
         Returns:
             bool: True if the plain text string matches the hashed string, False otherwise.
         """
-        with suppress(ValueError, TypeError, IndexError):
-            _, hashed_val = _hashed_string.split('$', 1)
-            sha256_hashed_hex = binascii.hexlify(hashlib.sha256(_string.encode()).digest())
-            return self.bcrypt.checkpw(sha256_hashed_hex, ('$' + hashed_val).encode('ascii'))
-        return False
+        try:
+            algorithm, hashed_val = _hashed_string.split('$', 1)
+            if algorithm != self.algorithm:
+                return False
+            encoded_string: bytes = _string.encode()
+            if self.digest is not None:
+                encoded_string = self._get_hexdigest(_string, self.digest)
+            return self.bcrypt.checkpw(encoded_string, ('$' + hashed_val).encode('ascii'))
+        except (ValueError, TypeError, IndexError):
+            return False
 
     def needs_rehash(self, _hashed_string: str, /) -> bool:
         """
@@ -75,3 +84,22 @@ class BCryptSha256Hasher(PHasher):
                 return False
             return int(parts[2]) != self.rounds
         return False
+
+    @staticmethod
+    def _get_hexdigest(_string: str, digest: Callable) -> bytes:
+        """
+        Generate a hexadecimal digest for a given string using the specified digest function.
+
+        Args:
+            _string (str): The input string to be hashed.
+            digest (Callable): A callable digest function (e.g., hashlib.sha256).
+
+        Returns:
+            bytes: The hexadecimal representation of the digest.
+        """
+        return binascii.hexlify(digest(_string.encode()).digest())
+
+
+class BCryptHasher(BCryptSha256Hasher):
+    algorithm = 'bcrypt'
+    digest = None

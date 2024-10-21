@@ -1,20 +1,23 @@
 import hashlib
 import os
 import binascii
+import hmac
 
 from contextlib import suppress
+from typing import Callable
 
 from hash_forge.protocols import PHasher
 
 
 class PBKDF2Sha256Hasher(PHasher):
     algorithm: str = 'pbkdf2_sha256'
+    digest: Callable = hashlib.sha256
 
-    def __init__(self, iterations: int = 100_000, salt: int = 16) -> None:
+    def __init__(self, iterations: int = 100_000, salt_length: int = 16) -> None:
         self.iterations = iterations
-        self.salt = salt
+        self.salt_length = salt_length
 
-    __slots__ = ('iterations', 'salt')
+    __slots__ = ('iterations', 'salt_length')
 
     def hash(self, _string: str, /) -> str:
         """
@@ -26,10 +29,10 @@ class PBKDF2Sha256Hasher(PHasher):
         Returns:
             str: The hashed string in the format 'algorithm$iterations$salt$hashed'.
         """
-        salt: str = binascii.hexlify(os.urandom(self.salt)).decode('ascii')
-        dk: bytes = hashlib.pbkdf2_hmac('sha256', _string.encode(), salt.encode(), self.iterations)
+        salt: str = binascii.hexlify(os.urandom(self.salt_length)).decode('ascii')
+        dk: bytes = hashlib.pbkdf2_hmac(self.digest().name, _string.encode(), salt.encode(), self.iterations)
         hashed: str = binascii.hexlify(dk).decode('ascii')
-        return '%s$%s$%s$%s' % (self.algorithm, self.iterations, salt, hashed)
+        return f'{self.algorithm}${self.iterations}${salt}${hashed}'
 
     def verify(self, _string: str, _hashed_string: str, /) -> bool:
         """
@@ -42,14 +45,15 @@ class PBKDF2Sha256Hasher(PHasher):
         Returns:
             bool: True if the string matches the hashed string, False otherwise.
         """
-        with suppress(ValueError, AssertionError):
-            algorithm, iterations, salt, hashed = _hashed_string.split('$')
+        try:
+            algorithm, iterations, salt, hashed = _hashed_string.split('$', 3)
             if algorithm != self.algorithm:
                 return False
-            dk: bytes = hashlib.pbkdf2_hmac('sha256', _string.encode(), salt.encode(), int(iterations))
+            dk: bytes = hashlib.pbkdf2_hmac(self.digest().name, _string.encode(), salt.encode(), int(iterations))
             hashed_input: str = binascii.hexlify(dk).decode('ascii')
-            return hashed == hashed_input
-        return False
+            return hmac.compare_digest(hashed, hashed_input)
+        except (ValueError, AssertionError):
+            return False
 
     def needs_rehash(self, _hashed_string: str, /) -> bool:
         """
@@ -59,11 +63,15 @@ class PBKDF2Sha256Hasher(PHasher):
             _hashed_string (str): The hashed string to check.
 
         Returns:
-            bool: True if the number of iterations in the hashed string does not match
-                  the current number of iterations, indicating that a rehash is needed.
-                  False otherwise.
+            bool: True if rehash is needed, False otherwise.
         """
-        with suppress(ValueError):
+        try:
             _, iterations, *_ = _hashed_string.split('$')
             return int(iterations) != self.iterations
-        return False
+        except ValueError:
+            return False
+
+
+class PBKDF2Sha1Hasher(PBKDF2Sha256Hasher):
+    algorithm = "pbkdf2_sha1"
+    digest = hashlib.sha1
