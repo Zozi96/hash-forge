@@ -1,4 +1,5 @@
 # Hash Forge
+
 [![PyPI version](https://badge.fury.io/py/hash-forge.svg)](https://pypi.org/project/hash-forge/) ![Build Status](https://github.com/Zozi96/hash-forge/actions/workflows/unittest.yml/badge.svg)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python Versions](https://img.shields.io/pypi/pyversions/hash-forge.svg)](https://pypi.org/project/hash-forge/) [![Downloads](https://pepy.tech/badge/hash-forge)](https://pepy.tech/project/hash-forge) [![GitHub issues](https://img.shields.io/github/issues/Zozi96/hash-forge)](https://github.com/Zozi96/hash-forge/issues) ![Project Status](https://img.shields.io/badge/status-active-brightgreen.svg) [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-blue.svg)](https://github.com/Zozi96/hash-forge/issues)
 
 **Hash Forge** is a lightweight Python library designed to simplify the process of hashing and verifying data using a variety of secure hashing algorithms.
@@ -68,6 +69,7 @@ Currently supported hashers:
 - **bcrypt**
 - **Argon2**
 - **Scrypt**
+- **Blake2**
 
 You can initialize `HashManager` with one or more hashers:
 
@@ -76,8 +78,9 @@ from hash_forge import HashManager
 from hash_forge.pbkdf2_hasher import PBKDF2Sha256Hasher
 from hash_forge.bcrypt_hasher import BCryptSha256Hasher
 from hash_forge.scrypt_hasher import ScryptHasher
+from hash_forge.blake2_hasher import Blake2Hasher
 
-hash_manager = HashManager(PBKDF2Sha256Hasher(iterations=150_000), BCryptSha256Hasher(), ScryptHasher())
+hash_manager = HashManager(PBKDF2Sha256Hasher(), BCryptSha256Hasher(), ScryptHasher(), Blake2Hasher(key='my_secret')))
 ```
 
 ### Verifying a Hash
