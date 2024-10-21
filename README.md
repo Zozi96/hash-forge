@@ -6,11 +6,11 @@
 
 ## Overview
 
-Hash Forge is a flexible and secure hash management tool that supports multiple hashing algorithms. This tool allows you to hash and verify data using popular hash algorithms, making it easy to integrate into projects where password hashing or data integrity is essential. The library supports bcrypt, Scrypt, Argon2, and PBKDF2 out of the box, and you can add more hashers as needed.
+Hash Forge is a flexible and secure hash management tool that supports multiple hashing algorithms. This tool allows you to hash and verify data using popular hash algorithms, making it easy to integrate into projects where password hashing or data integrity is essential.
 
 ## Features
 
-- **Multiple Hashing Algorithms**: Supports bcrypt, Scrypt, Argon2, and PBKDF2.
+- **Multiple Hashing Algorithms**: Supports bcrypt, Scrypt, Argon2, Blake2 and PBKDF2.
 - **Hashing and Verification**: Easily hash strings and verify their integrity.
 - **Rehash Detection**: Automatically detects if a hash needs to be rehashed based on outdated parameters or algorithms.
 - **Flexible Integration**: Extendible to add new hashing algorithms as needed.
@@ -45,7 +45,7 @@ from hash_forge import HashManager
 from hash_forge.pbkdf2_hasher import PBKDF2Hasher
 
 # Initialize HashManager with PBKDF2Hasher
-hash_manager = HashManager(PBKDF2Hasher(iterations=150_000))
+hash_manager = HashManager(PBKDF2Hasher())
 
 # Hash a string
 hashed_value = hash_manager.hash("my_secure_password")
