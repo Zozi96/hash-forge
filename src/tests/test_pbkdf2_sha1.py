@@ -1,6 +1,6 @@
 import pytest
 
-from hash_forge.pbkdf2_hasher import PBKDF2Sha1Hasher
+from hash_forge import PBKDF2Sha1Hasher
 
 
 @pytest.fixture

@@ -1,4 +1,11 @@
 from hash_forge.protocols import PHasher
+from hash_forge.hashers.argon2_hasher import Argon2Hasher
+from hash_forge.hashers.bcrypt_hasher import BCryptHasher, BCryptSha256Hasher
+from hash_forge.hashers.pbkdf2_hasher import PBKDF2Sha256Hasher, PBKDF2Sha1Hasher
+from hash_forge.hashers.scrypt_hasher import ScryptHasher
+from hash_forge.hashers.blake2_hasher import Blake2Hasher
+from hash_forge.hashers.ripemd160_hasher import Ripemd160Hasher
+from hash_forge.hashers.whirlpool_hasher import WhirlpoolHasher
 
 
 class HashManager:
@@ -89,3 +96,17 @@ class HashManager:
             None if no match is found.
         """
         return next((hasher for algorithm, hasher in self.hashers if hashed_string.startswith(algorithm)), None)
+
+
+__all__ = [
+    'Argon2Hasher',
+    'BCryptHasher',
+    'BCryptSha256Hasher',
+    'PBKDF2Sha256Hasher',
+    'PBKDF2Sha1Hasher',
+    'ScryptHasher',
+    'Blake2Hasher',
+    'Ripemd160Hasher',
+    'WhirlpoolHasher',
+    'HashManager',
+]
