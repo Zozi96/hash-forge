@@ -1,6 +1,6 @@
 import pytest
 
-from hash_forge.argon2_hasher import Argon2Hasher
+from hash_forge import Argon2Hasher
 
 
 @pytest.fixture

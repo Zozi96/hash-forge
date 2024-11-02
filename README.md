@@ -10,7 +10,7 @@ Hash Forge is a flexible and secure hash management tool that supports multiple 
 
 ## Features
 
-- **Multiple Hashing Algorithms**: Supports bcrypt, Scrypt, Argon2, Blake2 and PBKDF2.
+- **Multiple Hashing Algorithms**: Supports bcrypt, Scrypt, Argon2, Blake2, PBKDF2, Whirlpool and RIPEMD-160.
 - **Hashing and Verification**: Easily hash strings and verify their integrity.
 - **Rehash Detection**: Automatically detects if a hash needs to be rehashed based on outdated parameters or algorithms.
 - **Flexible Integration**: Extendible to add new hashing algorithms as needed.
@@ -35,14 +35,18 @@ Hash Forge provides optional dependencies for specific hashing algorithms. To in
   ```bash
   pip install "hash-forge[argon2]"
   ```
+- **Whirlpool and RIPEMD-160** support:
+
+  ```bash
+  pip install "hash-forge[crypto]"
+  ```
 
 ## Usage
 
 ### Basic Example
 
 ```python
-from hash_forge import HashManager
-from hash_forge.pbkdf2_hasher import PBKDF2Hasher
+from hash_forge import HashManager, PBKDF2Hasher
 
 # Initialize HashManager with PBKDF2Hasher
 hash_manager = HashManager(PBKDF2Hasher())
@@ -70,17 +74,32 @@ Currently supported hashers:
 - **Argon2**
 - **Scrypt**
 - **Blake2**
+- **Whirlpool**
+- **RIPEMD-160**
 
 You can initialize `HashManager` with one or more hashers:
 
 ```python
-from hash_forge import HashManager
-from hash_forge.pbkdf2_hasher import PBKDF2Sha256Hasher
-from hash_forge.bcrypt_hasher import BCryptSha256Hasher
-from hash_forge.scrypt_hasher import ScryptHasher
-from hash_forge.blake2_hasher import Blake2Hasher
+from hash_forge import (
+    HashManager,
+    PBKDF2Sha256Hasher,
+    BCryptSha256Hasher,
+    Argon2Hasher,
+    ScryptHasher,
+    Ripemd160Hasher,
+    Blake2Hasher,
+    WhirlpoolHasher,
+)
 
-hash_manager = HashManager(PBKDF2Sha256Hasher(), BCryptSha256Hasher(), ScryptHasher(), Blake2Hasher(key='my_secret')))
+hash_manager = HashManager(
+    PBKDF2Sha256Hasher(iterations=150_000),
+    BCryptSha256Hasher(),
+    Argon2Hasher(),
+    ScryptHasher(),
+    Ripemd160Hasher(),
+    Blake2Hasher('MySecretKey'),
+    WhirlpoolHasher(),
+  )
 ```
 
 ### Verifying a Hash

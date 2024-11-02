@@ -1,9 +1,10 @@
 import hashlib
 import base64
 import secrets
+import hmac
 
 from functools import lru_cache
-from hmac import compare_digest
+
 
 from hash_forge.protocols import PHasher
 
@@ -75,7 +76,7 @@ class ScryptHasher(PHasher):
             bool: True if the original string matches the hashed string, False otherwise.
         """
         encoded = self.hash(_string)
-        return compare_digest(_hashed_string, encoded)
+        return hmac.compare_digest(_hashed_string, encoded)
 
     def needs_rehash(self, _hashed_string: str) -> bool:
         """

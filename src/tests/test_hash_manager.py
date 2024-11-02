@@ -1,10 +1,15 @@
 import pytest
 
-from hash_forge import HashManager
-from hash_forge.pbkdf2_hasher import PBKDF2Sha256Hasher
-from hash_forge.bcrypt_hasher import BCryptSha256Hasher
-from hash_forge.argon2_hasher import Argon2Hasher
-from hash_forge.scrypt_hasher import ScryptHasher
+from hash_forge import (
+    HashManager,
+    PBKDF2Sha256Hasher,
+    BCryptSha256Hasher,
+    Argon2Hasher,
+    ScryptHasher,
+    Ripemd160Hasher,
+    Blake2Hasher,
+    WhirlpoolHasher,
+)
 
 
 @pytest.fixture
@@ -18,7 +23,15 @@ def hash_manager_instance() -> HashManager:
     Returns:
         HashManager: An instance of HashManager initialized with the provided hashers.
     """
-    return HashManager(PBKDF2Sha256Hasher(iterations=150_000), BCryptSha256Hasher(), Argon2Hasher(), ScryptHasher())
+    return HashManager(
+        PBKDF2Sha256Hasher(iterations=150_000),
+        BCryptSha256Hasher(),
+        Argon2Hasher(),
+        ScryptHasher(),
+        Ripemd160Hasher(),
+        Blake2Hasher('MySecretKey'),
+        WhirlpoolHasher(),
+    )
 
 
 def test_hash_with_preferred_hasher(hash_manager_instance: HashManager) -> None:
