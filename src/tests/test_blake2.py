@@ -1,7 +1,7 @@
 import pytest
 import secrets
 
-from hash_forge.blake2_hasher import Blake2Hasher
+from hash_forge import Blake2Hasher
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 import re
 import pytest
 
-from hash_forge.bcrypt_hasher import BCryptHasher
+from hash_forge import BCryptHasher
 
 
 @pytest.fixture
