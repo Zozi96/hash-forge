@@ -1,11 +1,12 @@
 import hmac
+from typing import ClassVar
 
 from hash_forge.protocols import PHasher
 
 
 class Ripemd160Hasher(PHasher):
-    algorithm: str = 'RIPEMD-160'
-    library_module: str = 'Crypto.Hash.RIPEMD160'
+    algorithm: ClassVar[str] = 'RIPEMD-160'
+    library_module: ClassVar[str] = 'Crypto.Hash.RIPEMD160'
 
     def __init__(self) -> None:
         """

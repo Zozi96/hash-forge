@@ -4,13 +4,13 @@ import secrets
 import hmac
 
 from functools import lru_cache
-
+from typing import ClassVar
 
 from hash_forge.protocols import PHasher
 
 
 class ScryptHasher(PHasher):
-    algorithm: str = 'scrypt'
+    algorithm: ClassVar[str] = 'scrypt'
 
     def __init__(
         self,
@@ -51,7 +51,7 @@ class ScryptHasher(PHasher):
         Returns:
             str: The hashed string in the format 'algorithm$work_factor$salt$block_size$parallelism$hashed_value'.
         """
-        salt: str = self.generate_salt()
+        salt = self.generate_salt()
         hashed = hashlib.scrypt(
             _string.encode(),
             salt=salt.encode(),
@@ -61,8 +61,15 @@ class ScryptHasher(PHasher):
             maxmem=self.maxmem,
             dklen=self.dklen,
         )
-        hashed = base64.b64encode(hashed).decode('ascii').strip()
-        return '%s$%s$%s$%s$%s$%s' % (self.algorithm, self.work_factor, salt, self.block_size, self.parallelism, hashed)
+        hashed_string = base64.b64encode(hashed).decode('ascii').strip()
+        return '%s$%s$%s$%s$%s$%s' % (
+            self.algorithm,
+            self.work_factor,
+            salt,
+            self.block_size,
+            self.parallelism,
+            hashed_string,
+        )
 
     def verify(self, _string: str, _hashed_string: str) -> bool:
         """

@@ -2,11 +2,13 @@ import binascii
 import hashlib
 import hmac
 
+from typing import ClassVar
+
 from hash_forge.protocols import PHasher
 
 
 class Blake2Hasher(PHasher):
-    algorithm: str = 'blake2b'
+    algorithm: ClassVar[str] = 'blake2b'
 
     def __init__(self, key: str, digest_size: int = 64) -> None:
         """

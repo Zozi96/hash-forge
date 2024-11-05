@@ -3,15 +3,14 @@ import os
 import binascii
 import hmac
 
-from contextlib import suppress
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 from hash_forge.protocols import PHasher
 
 
 class PBKDF2Sha256Hasher(PHasher):
-    algorithm: str = 'pbkdf2_sha256'
-    digest: Callable = hashlib.sha256
+    algorithm: ClassVar[str] = 'pbkdf2_sha256'
+    digest: ClassVar[Callable[..., Any]] = hashlib.sha256
 
     def __init__(self, iterations: int = 100_000, salt_length: int = 16) -> None:
         self.iterations = iterations

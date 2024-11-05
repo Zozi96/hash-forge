@@ -3,7 +3,7 @@ import secrets
 from hash_forge.constants import RANDOM_STRING_CHARS
 
 
-def get_random_string(length, allowed_chars=RANDOM_STRING_CHARS) -> str:
+def get_random_string(length: int, allowed_chars: str = RANDOM_STRING_CHARS) -> str:
     """
     Return a securely generated random string.
 
