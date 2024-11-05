@@ -1,4 +1,4 @@
-name: Tests
+name: MyPy
 
 on:
   pull_request:
@@ -27,5 +27,5 @@ jobs:
       - name: Install dependencies with uv
         run: uv sync --all-extras --dev
 
-      - name: Run Pytest
-        run: uv run pytest
+      - name: Run MyPy
+        run: uv run mypy
