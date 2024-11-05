@@ -2,15 +2,15 @@ import binascii
 import hashlib
 
 from contextlib import suppress
-from typing import Callable
+from typing import Any, Callable, ClassVar, Optional, cast
 
 from hash_forge.protocols import PHasher
 
 
 class BCryptSha256Hasher(PHasher):
-    algorithm: str = 'bcrypt_sha256'
-    library_module: str = 'bcrypt'
-    digest: Callable | None = hashlib.sha256
+    algorithm: ClassVar[str] = 'bcrypt_sha256'
+    library_module: ClassVar[str] = 'bcrypt'
+    digest: Callable[[bytes], Any] | None = cast(Callable[[bytes], Any], hashlib.sha256)
 
     def __init__(self, rounds: int = 12) -> None:
         """
@@ -58,7 +58,7 @@ class BCryptSha256Hasher(PHasher):
             encoded_string: bytes = _string.encode()
             if self.digest is not None:
                 encoded_string = self._get_hexdigest(_string, self.digest)
-            return self.bcrypt.checkpw(encoded_string, ('$' + hashed_val).encode('ascii'))
+            return cast(bool, self.bcrypt.checkpw(encoded_string, ('$' + hashed_val).encode('ascii')))
         except (ValueError, TypeError, IndexError):
             return False
 
@@ -86,7 +86,7 @@ class BCryptSha256Hasher(PHasher):
         return False
 
     @staticmethod
-    def _get_hexdigest(_string: str, digest: Callable) -> bytes:
+    def _get_hexdigest(_string: str, digest: Callable[[bytes], Any]) -> bytes:
         """
         Generate a hexadecimal digest for a given string using the specified digest function.
 

@@ -1,11 +1,12 @@
 import hmac
+from typing import ClassVar
 
 from hash_forge.protocols import PHasher
 
 
 class WhirlpoolHasher(PHasher):
-    algorithm: str = 'whirlpool'
-    library_module: str = 'Crypto.Hash.SHA512'
+    algorithm: ClassVar[str] = 'whirlpool'
+    library_module: ClassVar[str] = 'Crypto.Hash.SHA512'
 
     def __init__(self) -> None:
         """
