@@ -46,7 +46,8 @@ Hash Forge provides optional dependencies for specific hashing algorithms. To in
 ### Basic Example
 
 ```python
-from hash_forge import HashManager, PBKDF2Hasher
+from hash_forge import HashManager
+from hash-forge.hashers import PBKDF2Hasher
 
 # Initialize HashManager with PBKDF2Hasher
 hash_manager = HashManager(PBKDF2Hasher())
