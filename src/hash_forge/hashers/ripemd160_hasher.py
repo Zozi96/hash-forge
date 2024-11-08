@@ -5,8 +5,8 @@ from hash_forge.protocols import PHasher
 
 
 class Ripemd160Hasher(PHasher):
-    algorithm: ClassVar[str] = 'RIPEMD-160'
-    library_module: ClassVar[str] = 'Crypto.Hash.RIPEMD160'
+    algorithm: ClassVar[str] = "RIPEMD-160"
+    library_module: ClassVar[str] = "Crypto.Hash.RIPEMD160"
 
     def __init__(self) -> None:
         """
@@ -29,7 +29,7 @@ class Ripemd160Hasher(PHasher):
         """
         hashed = self.ripemd160.new()
         hashed.update(_string.encode())
-        return '%s$%s' % (self.algorithm, hashed.hexdigest())
+        return f"{self.algorithm}${hashed.hexdigest()}"
 
     def verify(self, _string: str, _hashed: str, /) -> bool:
         """
@@ -42,7 +42,7 @@ class Ripemd160Hasher(PHasher):
         Returns:
             bool: True if the string matches the hashed value, False otherwise.
         """
-        algorithm, hash_value = _hashed.split('$', 1)
+        algorithm, hash_value = _hashed.split("$", 1)
         if algorithm != self.algorithm:
             return False
         hashed = self.ripemd160.new()
@@ -60,5 +60,5 @@ class Ripemd160Hasher(PHasher):
             bool: True if the algorithm used in the hashed string does not match
                   the current algorithm, indicating that a rehash is needed.
         """
-        algorithm, _ = _hashed_string.split('$', 1)
+        algorithm, _ = _hashed_string.split("$", 1)
         return algorithm != self.algorithm

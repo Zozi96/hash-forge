@@ -35,7 +35,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv]
-dev-dependencies = ["mypy>=1.13.0", "pytest>=8.3.3"]
+dev-dependencies = ["pytest>=8.3.3", "ruff>=0.7.3"]
 
 [tool.mypy]
 files = "src/hash_forge"
@@ -48,3 +48,11 @@ warn_return_any = true
 bcrypt = ["bcrypt==4.2.0"]
 argon2 = ["argon2-cffi==23.1.0"]
 crypto = ["pycryptodome==3.21.0"]
+
+[tool.ruff]
+line-length = 120
+exclude = [".venv"]
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "B", "SIM", "I"]

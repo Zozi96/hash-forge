@@ -1,6 +1,6 @@
 import pytest
 
-from hash_forge import ScryptHasher
+from hash_forge.hashers import ScryptHasher
 
 
 @pytest.fixture
