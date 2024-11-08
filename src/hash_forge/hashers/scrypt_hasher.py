@@ -1,16 +1,29 @@
-import hashlib
 import base64
-import secrets
+import hashlib
 import hmac
-
+import secrets
 from functools import lru_cache
 from typing import ClassVar
 
 from hash_forge.protocols import PHasher
 
 
+@lru_cache
+def _generate_salt(salt: int) -> str:
+    """
+    Generates a base64-encoded salt string.
+
+    Args:
+        salt (int): The number of bytes to generate for the salt.
+
+    Returns:
+        str: A base64-encoded string representation of the generated salt.
+    """
+    return base64.b64encode(secrets.token_bytes(salt)).decode("ascii")
+
+
 class ScryptHasher(PHasher):
-    algorithm: ClassVar[str] = 'scrypt'
+    algorithm: ClassVar[str] = "scrypt"
 
     def __init__(
         self,
@@ -39,7 +52,7 @@ class ScryptHasher(PHasher):
         self.dklen = dklen
         self.salt_length = salt_length
 
-    __slots__ = ('work_factor', 'block_size', 'parallelism', 'maxmem', 'dklen', 'salt_length')
+    __slots__ = ("work_factor", "block_size", "parallelism", "maxmem", "dklen", "salt_length")
 
     def hash(self, _string: str) -> str:
         """
@@ -61,15 +74,8 @@ class ScryptHasher(PHasher):
             maxmem=self.maxmem,
             dklen=self.dklen,
         )
-        hashed_string = base64.b64encode(hashed).decode('ascii').strip()
-        return '%s$%s$%s$%s$%s$%s' % (
-            self.algorithm,
-            self.work_factor,
-            salt,
-            self.block_size,
-            self.parallelism,
-            hashed_string,
-        )
+        hashed_string = base64.b64encode(hashed).decode("ascii").strip()
+        return f"{self.algorithm}${self.work_factor}${salt}${self.block_size}${self.parallelism}${hashed_string}"
 
     def verify(self, _string: str, _hashed_string: str) -> bool:
         """
@@ -100,16 +106,11 @@ class ScryptHasher(PHasher):
         _, n, _, r, p, _ = _hashed_string.split("$", 5)
         return int(n) != self.work_factor or int(r) != self.block_size or int(p) != self.parallelism
 
-    @lru_cache
     def generate_salt(self) -> str:
         """
         Generates a cryptographic salt.
 
-        This method generates a random salt using the `secrets` module to ensure
-        cryptographic security. The generated salt is then encoded in base64 and
-        returned as an ASCII string.
-
         Returns:
-            str: A base64 encoded ASCII string representing the generated salt.
+            str: A string representing the generated salt.
         """
-        return base64.b64encode(secrets.token_bytes(self.salt_length)).decode('ascii')
+        return _generate_salt(self.salt_length)

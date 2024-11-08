@@ -1,7 +1,8 @@
 import re
+
 import pytest
 
-from hash_forge import BCryptSha256Hasher
+from hash_forge.hashers import BCryptSha256Hasher
 
 
 @pytest.fixture
@@ -125,6 +126,6 @@ def test_bcrypt_unknown_algorithm(bcrypt_hasher: BCryptSha256Hasher) -> None:
         - The needs_rehash method should return False when the hashed value uses an unknown algorithm.
     """
     data = "TestData123!"
-    unknown_hashed = f"unknown_algo$2b$12$abcdefghijklmnopqrstuv$hashvalue1234567"
+    unknown_hashed = "unknown_algo$2b$12$abcdefghijklmnopqrstuv$hashvalue1234567"
     assert bcrypt_hasher.verify(data, unknown_hashed) is False, "Verification should fail for unknown algorithm"
     assert bcrypt_hasher.needs_rehash(unknown_hashed) is False, "needs_rehash should return False for unknown algorithm"

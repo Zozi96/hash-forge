@@ -1,6 +1,6 @@
 import pytest
 
-from hash_forge import Ripemd160Hasher
+from hash_forge.hashers import Ripemd160Hasher
 
 
 @pytest.fixture

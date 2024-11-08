@@ -1,8 +1,8 @@
 import binascii
 import hashlib
-
+from collections.abc import Callable
 from contextlib import suppress
-from typing import Any, Callable, ClassVar, Optional, cast
+from typing import Any, ClassVar, cast
 
 from hash_forge.protocols import PHasher
 

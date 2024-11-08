@@ -1,7 +1,8 @@
-import pytest
 import secrets
 
-from hash_forge import Blake2Hasher
+import pytest
+
+from hash_forge.hashers import Blake2Hasher
 
 
 @pytest.fixture
@@ -36,7 +37,7 @@ def test_hash_creation(blake2_hasher: Blake2Hasher) -> None:
     hashed_value = blake2_hasher.hash(_string)
 
     assert hashed_value.startswith("blake2b$")
-    assert len(hashed_value.split('$')) == 3
+    assert len(hashed_value.split("$")) == 3
 
 
 def test_verify_hash_correct(blake2_hasher: Blake2Hasher) -> None:
@@ -110,7 +111,8 @@ def test_needs_rehash_true() -> None:
     4. Assert that the 64-byte hasher's `needs_rehash` method returns `True` when passed the 32-byte hashed value.
 
     Expected Result:
-    The `needs_rehash` method should return `True` indicating that the hashed value needs to be rehashed to match the 64-byte digest size.
+    The `needs_rehash` method should return `True` indicating that the hashed value needs to be rehashed to match the 
+    64-byte digest size.
     """
     key: str = secrets.token_urlsafe()
     blake2_hasher_32 = Blake2Hasher(key, digest_size=32)
@@ -126,9 +128,9 @@ def test_hash_with_key() -> None:
     """
     Test the Blake2Hasher class with a key.
 
-    This test generates a random key using `secrets.token_urlsafe()`, 
-    creates an instance of `Blake2Hasher` with the generated key, 
-    and hashes a sample string. It then verifies that the hashed 
+    This test generates a random key using `secrets.token_urlsafe()`,
+    creates an instance of `Blake2Hasher` with the generated key,
+    and hashes a sample string. It then verifies that the hashed
     value matches the original string and does not match an incorrect string.
 
     Assertions:
@@ -159,6 +161,6 @@ def test_verify_fails_on_modified_hash(blake2_hasher: Blake2Hasher) -> None:
     """
     _string = "example_password"
     hashed_value = blake2_hasher.hash(_string)
-    modified_hash = hashed_value.replace('a', 'b', 1)
-    
+    modified_hash = hashed_value.replace("a", "b", 1)
+
     assert blake2_hasher.verify(_string, modified_hash) is False
