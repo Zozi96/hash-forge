@@ -80,14 +80,14 @@ Currently supported hashers:
 You can initialize `HashManager` with one or more hashers:
 
 ```python
-from hash_forge import (
-    HashManager,
-    PBKDF2Sha256Hasher,
-    BCryptSha256Hasher,
+from hash_forge import HashManager
+from hash_forge.hashers import (
     Argon2Hasher,
-    ScryptHasher,
-    Ripemd160Hasher,
+    BCryptSha256Hasher,
     Blake2Hasher,
+    PBKDF2Sha256Hasher,
+    Ripemd160Hasher,
+    ScryptHasher,
     WhirlpoolHasher,
 )
 
