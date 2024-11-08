@@ -32,7 +32,7 @@ class WhirlpoolHasher(PHasher):
         """
         hashed = self.sha512.new()
         hashed.update(_string.encode())
-        return '%s$%s' % (self.algorithm, hashed.hexdigest())
+        return f'{self.algorithm}${hashed.hexdigest()}'
 
     def verify(self, _string: str, _hashed_string: str, /) -> bool:
         """

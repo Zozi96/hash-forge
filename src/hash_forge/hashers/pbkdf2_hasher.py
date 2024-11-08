@@ -1,9 +1,9 @@
-import hashlib
-import os
 import binascii
+import hashlib
 import hmac
-
-from typing import Any, Callable, ClassVar
+import os
+from collections.abc import Callable
+from typing import Any, ClassVar
 
 from hash_forge.protocols import PHasher
 

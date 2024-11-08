@@ -1,7 +1,6 @@
 import binascii
 import hashlib
 import hmac
-
 from typing import ClassVar
 
 from hash_forge.protocols import PHasher

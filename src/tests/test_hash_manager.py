@@ -1,13 +1,13 @@
 import pytest
 
-from hash_forge import (
-    HashManager,
-    PBKDF2Sha256Hasher,
-    BCryptSha256Hasher,
+from hash_forge import HashManager
+from hash_forge.hashers import (
     Argon2Hasher,
-    ScryptHasher,
-    Ripemd160Hasher,
+    BCryptSha256Hasher,
     Blake2Hasher,
+    PBKDF2Sha256Hasher,
+    Ripemd160Hasher,
+    ScryptHasher,
     WhirlpoolHasher,
 )
 
@@ -29,7 +29,7 @@ def hash_manager_instance() -> HashManager:
         Argon2Hasher(),
         ScryptHasher(),
         Ripemd160Hasher(),
-        Blake2Hasher('MySecretKey'),
+        Blake2Hasher("MySecretKey"),
         WhirlpoolHasher(),
     )
 
@@ -53,7 +53,7 @@ def test_hash_with_preferred_hasher(hash_manager_instance: HashManager) -> None:
           against the generated hash.
     """
     hashed: str = hash_manager_instance.hash("HashManagerTestData!")
-    assert hashed.startswith('pbkdf2_sha256$150000$')
+    assert hashed.startswith("pbkdf2_sha256$150000$")
     assert hash_manager_instance.verify("HashManagerTestData!", hashed) is True
 
 

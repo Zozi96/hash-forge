@@ -1,6 +1,6 @@
 import pytest
 
-from hash_forge import Argon2Hasher
+from hash_forge.hashers import Argon2Hasher
 
 
 @pytest.fixture
@@ -12,6 +12,7 @@ def argon2_hasher() -> Argon2Hasher:
         Argon2Hasher: An instance of the Argon2Hasher class.
     """
     return Argon2Hasher()
+
 
 def test_argon2_verify_correct_data(argon2_hasher: Argon2Hasher) -> None:
     """
@@ -29,6 +30,7 @@ def test_argon2_verify_correct_data(argon2_hasher: Argon2Hasher) -> None:
     data = "TestData123!"
     hashed: str = argon2_hasher.hash(data)
     assert argon2_hasher.verify(data, hashed) is True, "Verification should succeed for correct data"
+
 
 def test_argon2_verify_incorrect_data(argon2_hasher: Argon2Hasher) -> None:
     """
@@ -48,6 +50,7 @@ def test_argon2_verify_incorrect_data(argon2_hasher: Argon2Hasher) -> None:
     hashed: str = argon2_hasher.hash(data)
     assert argon2_hasher.verify(wrong_data, hashed) is False, "Verification should fail for incorrect data"
 
+
 def test_argon2_needs_rehash_false(argon2_hasher: Argon2Hasher) -> None:
     """
     Test that the `needs_rehash` method of the `Argon2Hasher` class returns False.
@@ -65,6 +68,7 @@ def test_argon2_needs_rehash_false(argon2_hasher: Argon2Hasher) -> None:
     data = "TestData123!"
     hashed = argon2_hasher.hash(data)
     assert argon2_hasher.needs_rehash(hashed) is False, "Hashed data should not need rehashing with current parameters"
+
 
 def test_argon2_needs_rehash_true(argon2_hasher: Argon2Hasher) -> None:
     """
@@ -84,7 +88,9 @@ def test_argon2_needs_rehash_true(argon2_hasher: Argon2Hasher) -> None:
     data = "TestData123!"
     old_hasher = Argon2Hasher(time_cost=1)
     old_hashed = old_hasher.hash(data)
-    assert argon2_hasher.needs_rehash(old_hashed) is True, "Hashed data should need rehashing due to increased time_cost"
+    assert (
+        argon2_hasher.needs_rehash(old_hashed) is True
+    ), "Hashed data should need rehashing due to increased time_cost"
 
 
 def test_argon2_invalid_hash_format(argon2_hasher: Argon2Hasher) -> None:
@@ -106,5 +112,6 @@ def test_argon2_invalid_hash_format(argon2_hasher: Argon2Hasher) -> None:
     data = "TestData123!"
     invalid_hashed = "invalid$hash$format"
     assert argon2_hasher.verify(data, invalid_hashed) is False, "Verification should fail for invalid hash format"
-    assert argon2_hasher.needs_rehash(invalid_hashed) is False, "needs_rehash should return False for invalid hash format"
-
+    assert (
+        argon2_hasher.needs_rehash(invalid_hashed) is False
+    ), "needs_rehash should return False for invalid hash format"

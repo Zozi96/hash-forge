@@ -1,13 +1,13 @@
-from functools import partial
 from contextlib import suppress
-from typing import ClassVar, cast, Any
+from functools import partial
+from typing import Any, ClassVar, cast
 
 from hash_forge.protocols import PHasher
 
 
 class Argon2Hasher(PHasher):
-    algorithm: ClassVar[str] = 'argon2'
-    library_module: ClassVar[str] = 'argon2'
+    algorithm: ClassVar[str] = "argon2"
+    library_module: ClassVar[str] = "argon2"
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class Argon2Hasher(PHasher):
         self.salt_len = salt_len
         self.ph = self._get_hasher()
 
-    __slots__ = ('argon2', 'time_cost', 'memory_cost', 'parallelism', 'hash_len', 'salt_len')
+    __slots__ = ("argon2", "time_cost", "memory_cost", "parallelism", "hash_len", "salt_len")
 
     def hash(self, _string: str, /) -> str:
         """
@@ -45,7 +45,8 @@ class Argon2Hasher(PHasher):
             _string (str): The string to be hashed.
 
         Returns:
-            str: The formatted hash string containing the algorithm, time cost, memory cost, parallelism, salt, and hashed value.
+            str: The formatted hash string containing the algorithm, time cost, memory cost, parallelism, salt, and
+            hashed value.
         """
 
         return self.algorithm + cast(str, self.ph.hash(_string))
@@ -62,8 +63,8 @@ class Argon2Hasher(PHasher):
             bool: True if the string matches the hashed string, False otherwise.
         """
         with suppress(self.argon2.exceptions.VerifyMismatchError, self.argon2.exceptions.InvalidHash, Exception):
-            _, _hashed_string = _hashed_string.split('$', 1)
-            return cast(bool, self.ph.verify('$' + _hashed_string, _string))
+            _, _hashed_string = _hashed_string.split("$", 1)
+            return cast(bool, self.ph.verify("$" + _hashed_string, _string))
         return False
 
     def needs_rehash(self, _hashed_string: str, /) -> bool:
@@ -77,8 +78,8 @@ class Argon2Hasher(PHasher):
             bool: True if the hashed string needs to be rehashed, False otherwise.
         """
         with suppress(self.argon2.exceptions.InvalidHash, Exception):
-            _, _hashed_string = _hashed_string.split('$', 1)
-            return cast(bool, self.ph.check_needs_rehash('$' + _hashed_string))
+            _, _hashed_string = _hashed_string.split("$", 1)
+            return cast(bool, self.ph.check_needs_rehash("$" + _hashed_string))
         return False
 
     def _get_hasher(self) -> Any:
@@ -98,13 +99,13 @@ class Argon2Hasher(PHasher):
         """
         hasher_partial = partial(self.argon2.PasswordHasher)
         if self.time_cost:
-            hasher_partial.keywords['time_cost'] = self.time_cost
+            hasher_partial.keywords["time_cost"] = self.time_cost
         if self.memory_cost:
-            hasher_partial.keywords['memory_cost'] = self.memory_cost
+            hasher_partial.keywords["memory_cost"] = self.memory_cost
         if self.parallelism:
-            hasher_partial.keywords['parallelism'] = self.parallelism
+            hasher_partial.keywords["parallelism"] = self.parallelism
         if self.hash_len:
-            hasher_partial.keywords['hash_len'] = self.hash_len
+            hasher_partial.keywords["hash_len"] = self.hash_len
         if self.salt_len:
-            hasher_partial.keywords['salt_len'] = self.salt_len
+            hasher_partial.keywords["salt_len"] = self.salt_len
         return hasher_partial()

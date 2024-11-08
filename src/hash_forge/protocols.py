@@ -1,8 +1,7 @@
 import importlib
-
-from types import ModuleType
-from typing import Protocol, ClassVar
 from abc import abstractmethod
+from types import ModuleType
+from typing import ClassVar, Protocol
 
 
 class PHasher(Protocol):
@@ -81,4 +80,4 @@ class PHasher(Protocol):
         except ImportError:
             raise ImportError(
                 f'{name} is not installed. Please install {name} to use this hasher. (pip install hash-forge[{name}])'
-            )
+            ) from None

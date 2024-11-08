@@ -1,6 +1,6 @@
 import pytest
 
-from hash_forge import WhirlpoolHasher
+from hash_forge.hashers import WhirlpoolHasher
 
 
 @pytest.fixture
@@ -30,9 +30,9 @@ def test_whirlpool_hash_format(whirlpool_hasher: WhirlpoolHasher) -> None:
         - The first part should be 'whirlpool'.
     """
     hashed: str = whirlpool_hasher.hash("TestData123!")
-    parts: list[str] = hashed.split('$')
+    parts: list[str] = hashed.split("$")
     assert len(parts) == 2, "Hash format is incorrect; expected 2 parts separated by '$'."
-    assert parts[0] == 'whirlpool', "Algorithm name in hash does not match 'whirlpool'."
+    assert parts[0] == "whirlpool", "Algorithm name in hash does not match 'whirlpool'."
 
 
 def test_whirlpool_verify_correct_data(whirlpool_hasher: WhirlpoolHasher) -> None:
@@ -105,7 +105,7 @@ def test_whirlpool_needs_rehash_true(whirlpool_hasher: WhirlpoolHasher) -> None:
     data = "TestData123!"
     hashed: str = whirlpool_hasher.hash(data)
     # Simulate an outdated hash by changing the algorithm name
-    old_hashed = hashed.replace('whirlpool$', 'oldalgo$', 1)
+    old_hashed = hashed.replace("whirlpool$", "oldalgo$", 1)
     assert whirlpool_hasher.needs_rehash(old_hashed) is True, "needs_rehash failed to identify outdated hash."
 
 
