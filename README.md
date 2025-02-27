@@ -40,6 +40,11 @@ Hash Forge provides optional dependencies for specific hashing algorithms. To in
   ```bash
   pip install "hash-forge[crypto]"
   ```
+- **Blake3** support:
+
+  ```bash
+  pip install "hash-forge[blake3]"
+  ```
 
 ## Usage
 
@@ -75,6 +80,7 @@ Currently supported hashers:
 - **Argon2**
 - **Scrypt**
 - **Blake2**
+- **Blake3**
 - **Whirlpool**
 - **RIPEMD-160**
 
@@ -90,6 +96,7 @@ from hash_forge.hashers import (
     Ripemd160Hasher,
     ScryptHasher,
     WhirlpoolHasher,
+    Blake3Hasher
 )
 
 hash_manager = HashManager(
@@ -100,6 +107,7 @@ hash_manager = HashManager(
     Ripemd160Hasher(),
     Blake2Hasher('MySecretKey'),
     WhirlpoolHasher(),
+    Blake3Hasher()
   )
 ```
 
