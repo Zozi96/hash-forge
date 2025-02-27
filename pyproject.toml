@@ -1,6 +1,6 @@
 [project]
 name = "hash-forge"
-version = "1.2.3"
+version = "2.0"
 description = "Hash Forge is a lightweight Python library designed to simplify the process of hashing and verifying data using a variety of secure hashing algorithms."
 readme = "README.md"
 authors = [{ name = "Zozi", email = "zozi.fer96@gmail.com" }]
@@ -15,6 +15,7 @@ keywords = [
     "blake2",
     "Whirlpool",
     "RIPEMD-160",
+    "blake3",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -44,7 +45,7 @@ disallow_untyped_defs = true
 warn_return_any = true
 
 [project.optional-dependencies]
-bcrypt = ["bcrypt==4.2.0"]
+bcrypt = ["bcrypt==4.2.1"]
 argon2 = ["argon2-cffi==23.1.0"]
 crypto = ["pycryptodome==3.21.0"]
 blake3 = ["blake3==1.0.4"]
