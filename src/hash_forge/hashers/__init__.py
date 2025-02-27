@@ -5,6 +5,7 @@ from .pbkdf2_hasher import PBKDF2Sha1Hasher, PBKDF2Sha256Hasher
 from .ripemd160_hasher import Ripemd160Hasher
 from .scrypt_hasher import ScryptHasher
 from .whirlpool_hasher import WhirlpoolHasher
+from .blake3_hasher import Blake3Hasher
 
 __all__ = [
     "Argon2Hasher",
@@ -16,4 +17,5 @@ __all__ = [
     "Blake2Hasher",
     "Ripemd160Hasher",
     "WhirlpoolHasher",
+    "Blake3Hasher",
 ]

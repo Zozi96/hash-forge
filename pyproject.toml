@@ -28,7 +28,6 @@ classifiers = [
 ]
 urls = { "Homepage" = "https://github.com/Zozi96/hash-forge", "Repository" = "https://github.com/Zozi96/hash-forge", "Issue Tracker" = "https://github.com/Zozi96/hash-forge/issues" }
 requires-python = ">=3.10"
-dependencies = []
 
 [build-system]
 requires = ["hatchling"]
@@ -48,6 +47,7 @@ warn_return_any = true
 bcrypt = ["bcrypt==4.2.0"]
 argon2 = ["argon2-cffi==23.1.0"]
 crypto = ["pycryptodome==3.21.0"]
+blake3 = ["blake3==1.0.4"]
 
 [tool.ruff]
 line-length = 120
