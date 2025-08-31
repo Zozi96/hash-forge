@@ -106,7 +106,7 @@ def test_pbkdf2_needs_rehash_true(pbkdf2_hasher: PBKDF2Sha1Hasher) -> None:
         True if the `needs_rehash` method correctly identifies that the old hash
         needs rehashing.
     """
-    old_hasher = PBKDF2Sha1Hasher(iterations=50_000)
+    old_hasher = PBKDF2Sha1Hasher(iterations=120_000)
     old_hashed: str = old_hasher.hash("TestData123!")
     assert pbkdf2_hasher.needs_rehash(old_hashed) is True
 

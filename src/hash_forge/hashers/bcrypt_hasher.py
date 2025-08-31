@@ -4,6 +4,8 @@ from collections.abc import Callable
 from contextlib import suppress
 from typing import Any, ClassVar, cast
 
+from hash_forge.config import DEFAULT_BCRYPT_ROUNDS, MIN_BCRYPT_ROUNDS
+from hash_forge.exceptions import InvalidHasherError
 from hash_forge.protocols import PHasher
 
 
@@ -12,13 +14,15 @@ class BCryptSha256Hasher(PHasher):
     library_module: ClassVar[str] = 'bcrypt'
     digest: Callable[[bytes], Any] | None = cast(Callable[[bytes], Any], hashlib.sha256)
 
-    def __init__(self, rounds: int = 12) -> None:
+    def __init__(self, rounds: int = DEFAULT_BCRYPT_ROUNDS) -> None:
         """
         Initializes the BcryptHasher with the specified number of rounds.
 
         Args:
             rounds (int, optional): The number of rounds to use for hashing. Defaults to 12.
         """
+        if rounds < MIN_BCRYPT_ROUNDS:
+            raise InvalidHasherError(f"BCrypt rounds must be at least {MIN_BCRYPT_ROUNDS}")
         self.bcrypt = self.load_library(self.library_module)
         self.rounds = rounds
 

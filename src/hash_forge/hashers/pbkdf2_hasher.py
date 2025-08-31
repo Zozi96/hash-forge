@@ -5,6 +5,8 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar
 
+from hash_forge.config import DEFAULT_PBKDF2_ITERATIONS, DEFAULT_PBKDF2_SALT_LENGTH, MIN_PBKDF2_ITERATIONS
+from hash_forge.exceptions import InvalidHasherError
 from hash_forge.protocols import PHasher
 
 
@@ -12,7 +14,13 @@ class PBKDF2Sha256Hasher(PHasher):
     algorithm: ClassVar[str] = 'pbkdf2_sha256'
     digest: ClassVar[Callable[..., Any]] = hashlib.sha256
 
-    def __init__(self, iterations: int = 100_000, salt_length: int = 16) -> None:
+    def __init__(
+        self, 
+        iterations: int = DEFAULT_PBKDF2_ITERATIONS, 
+        salt_length: int = DEFAULT_PBKDF2_SALT_LENGTH
+    ) -> None:
+        if iterations < MIN_PBKDF2_ITERATIONS:
+            raise InvalidHasherError(f"PBKDF2 iterations must be at least {MIN_PBKDF2_ITERATIONS}")
         self.iterations = iterations
         self.salt_length = salt_length
 
