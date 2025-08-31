@@ -1,26 +1,30 @@
+from hash_forge.exceptions import InvalidHasherError
+from hash_forge.factory import HasherFactory
 from hash_forge.protocols import PHasher
+from hash_forge.types import AlgorithmType
 
 
 class HashManager:
     def __init__(self, *hashers: PHasher) -> None:
         """
-        Initialize the HashForge instance with one or more hashers.
+        Initialize the HashManager instance with one or more hashers.
 
         Args:
-            *hashers (PHasher): One or more hasher instances to be used by the HashForge.
+            *hashers (PHasher): One or more hasher instances to be used by the HashManager.
 
         Raises:
-            ValueError: If no hashers are provided.
+            InvalidHasherError: If no hashers are provided.
 
         Attributes:
             hashers (Set[Tuple[str, PHasher]]): A set of tuples containing the algorithm name and the hasher instance.
+            hasher_map (Dict[str, PHasher]): A mapping of algorithm names to hasher instances for O(1) lookup.
             preferred_hasher (PHasher): The first hasher provided, used as the preferred hasher.
         """
         if not hashers:
-            raise ValueError("At least one hasher is required.")
-        self.hashers: set[tuple[str, PHasher]] = {
-            (hasher.algorithm, hasher) for hasher in hashers
-        }
+            raise InvalidHasherError("At least one hasher is required.")
+        self.hashers: set[tuple[str, PHasher]] = {(hasher.algorithm, hasher) for hasher in hashers}
+        # Create a mapping for O(1) hasher lookup
+        self.hasher_map: dict[str, PHasher] = {hasher.algorithm: hasher for hasher in hashers}
         self.preferred_hasher: PHasher = hashers[0]
 
     def hash(self, string: str) -> str:
@@ -45,9 +49,6 @@ class HashManager:
 
         Returns:
             bool: True if the string matches the hashed string, False otherwise.
-
-        Raises:
-            IndexError: If the hashed string does not contain a valid algorithm identifier.
         """
         hasher: PHasher | None = self._get_hasher_by_hash(hashed_string)
         if hasher is None:
@@ -67,9 +68,6 @@ class HashManager:
 
         Returns:
             bool: True if the hashed string needs to be rehashed, False otherwise.
-
-        Raises:
-            IndexError: If the hashed string format is invalid.
         """
         hasher: PHasher | None = self._get_hasher_by_hash(hashed_string)
         if hasher is None:
@@ -80,8 +78,8 @@ class HashManager:
         """
         Retrieve the hasher instance that matches the given hashed string.
 
-        This method iterates through the available hashers and returns the first
-        hasher whose algorithm matches the beginning of the provided hashed string.
+        This method uses the hasher mapping to find the appropriate hasher
+        based on the algorithm prefix in the hashed string.
 
         Args:
             hashed_string (str): The hashed string to match against available hashers.
@@ -90,14 +88,47 @@ class HashManager:
             PHasher | None: The hasher instance that matches the hashed string, or
             None if no match is found.
         """
-        return next(
-            (
-                hasher
-                for algorithm, hasher in self.hashers
-                if hashed_string.startswith(algorithm)
-            ),
-            None,
-        )
+        # Try to find matching algorithm by checking prefixes
+        for algorithm in self.hasher_map:
+            if hashed_string.startswith(algorithm):
+                return self.hasher_map[algorithm]
+
+    @classmethod
+    def from_algorithms(cls, *algorithms: AlgorithmType, **kwargs) -> "HashManager":
+        """
+        Create a HashManager instance using algorithm names.
+
+        Args:
+            *algorithms: Algorithm names to create hashers for
+            **kwargs: Additional arguments passed to hasher constructors
+
+        Returns:
+            HashManager: A new HashManager instance
+
+        Raises:
+            UnsupportedAlgorithmError: If any algorithm is not supported
+        """
+        hashers = []
+        for algorithm in algorithms:
+            hasher = HasherFactory.create(algorithm, **kwargs)
+            hashers.append(hasher)
+        return cls(*hashers)
+
+    @staticmethod
+    def quick_hash(string: str, algorithm: AlgorithmType = "pbkdf2_sha256", **kwargs) -> str:
+        """
+        Quickly hash a string using the specified algorithm.
+
+        Args:
+            string: The string to hash
+            algorithm: The algorithm to use (default: pbkdf2_sha256)
+            **kwargs: Additional arguments for the hasher
+
+        Returns:
+            str: The hashed string
+        """
+        hasher = HasherFactory.create(algorithm, **kwargs)
+        return hasher.hash(string)
 
 
-__all__ = ["HashManager"]
+__all__ = ["HashManager", "AlgorithmType"]
