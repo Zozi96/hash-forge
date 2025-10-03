@@ -1,6 +1,6 @@
 [project]
 name = "hash-forge"
-version = "3.0.0"
+version = "3.0.1"
 description = "Hash Forge is a lightweight Python library designed to simplify the process of hashing and verifying data using a variety of secure hashing algorithms."
 readme = "README.md"
 authors = [{ name = "Zozi", email = "zozi.fer96@gmail.com" }]
@@ -52,7 +52,7 @@ blake3 = ["blake3==1.0.7"]
 
 [tool.ruff]
 line-length = 120
-exclude = [".venv"]
+exclude = [".venv", "examples"]
 src = ["src", "tests"]
 
 [tool.ruff.lint]
