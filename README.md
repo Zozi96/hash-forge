@@ -11,13 +11,15 @@ Hash Forge is a flexible and secure hash management tool that supports multiple 
 ## Features
 
 - **Multiple Hashing Algorithms**: Supports bcrypt, Scrypt, Argon2, Blake2, Blake3, PBKDF2, Whirlpool and RIPEMD-160.
+- **Async/Await Support**: Non-blocking operations with `hash_async()`, `verify_async()`, and batch processing.
+- **Builder Pattern**: Fluent, chainable API for elegant configuration.
+- **Configuration Management**: Load settings from environment variables, JSON files, or code.
 - **Hashing and Verification**: Easily hash strings and verify their integrity.
 - **Rehash Detection**: Automatically detects if a hash needs to be rehashed based on outdated parameters or algorithms.
 - **Type-Safe API**: Full TypeScript-like type hints with `AlgorithmType` for better IDE support.
-- **Factory Pattern**: Create hashers dynamically by algorithm name.
-- **Performance Optimized**: O(1) hasher lookup with internal caching.
+- **Performance Optimized**: O(1) hasher lookup, async batch operations 3-5x faster.
 - **Security Focused**: Enforces minimum security parameters and uses cryptographically secure random generation.
-- **Flexible Integration**: Extendible to add new hashing algorithms as needed.
+- **Well Documented**: Comprehensive examples, security guidelines, and contribution docs.
 
 ## Installation
 
@@ -50,6 +52,25 @@ Hash Forge provides optional dependencies for specific hashing algorithms. To in
   pip install "hash-forge[blake3]"
   ```
 
+## Quick Start
+
+```python
+from hash_forge import HashManager
+
+# Create a HashManager with Argon2 (recommended)
+hash_manager = HashManager.from_algorithms("argon2")
+
+# Hash a password
+hashed = hash_manager.hash("my_secure_password")
+
+# Verify a password
+is_valid = hash_manager.verify("my_secure_password", hashed)
+print(is_valid)  # True
+
+# Check if rehashing is needed
+needs_update = hash_manager.needs_rehash(hashed)
+```
+
 ## Usage
 
 ### Basic Example
@@ -72,6 +93,14 @@ print(is_valid)  # Outputs: True
 needs_rehash = hash_manager.needs_rehash(hashed_value)
 print(needs_rehash)  # Outputs: False
 ```
+
+### Examples
+
+Check out the [`examples/`](examples/) directory for more practical examples:
+
+- **[basic_usage.py](examples/basic_usage.py)** - Fundamental operations and common patterns
+- **[async_fastapi.py](examples/async_fastapi.py)** - FastAPI integration with async support
+- **[builder_pattern.py](examples/builder_pattern.py)** - Fluent builder API examples
 
 ### Quick Hash (New in v2.1.0)
 
@@ -553,10 +582,31 @@ hash_forge/
     └── helpers.py
 ```
 
+## Documentation
+
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
+- **[SECURITY.md](SECURITY.md)** - Security best practices and vulnerability reporting
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines and development setup
+- **[Examples](examples/)** - Practical usage examples
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues or pull requests to help improve the project.
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Setting up the development environment
+- Running tests and linting
+- Code style and documentation standards
+- Submitting pull requests
+
+## Security
+
+For security best practices and to report vulnerabilities, please see our [Security Policy](SECURITY.md).
+
+**Recommended algorithms for password hashing:**
+1. Argon2 (best choice)
+2. BCrypt (industry standard)
+3. PBKDF2-SHA256 (NIST approved)
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

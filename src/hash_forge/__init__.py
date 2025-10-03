@@ -30,7 +30,7 @@ from hash_forge.exceptions import (
 from hash_forge.types import AlgorithmType
 
 # Version
-__version__ = "2.1.0"
+__version__ = "3.0.1"
 
 # Public API
 __all__ = [
