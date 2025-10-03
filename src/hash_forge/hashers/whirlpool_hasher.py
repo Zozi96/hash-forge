@@ -1,7 +1,7 @@
 import hmac
 from typing import ClassVar
 
-from hash_forge.protocols import PHasher
+from hash_forge.core.protocols import PHasher
 
 
 class WhirlpoolHasher(PHasher):

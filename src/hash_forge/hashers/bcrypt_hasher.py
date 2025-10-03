@@ -1,106 +1,66 @@
 import binascii
 import hashlib
 from collections.abc import Callable
-from contextlib import suppress
 from typing import Any, ClassVar, cast
 
-from hash_forge.config import DEFAULT_BCRYPT_ROUNDS, MIN_BCRYPT_ROUNDS
+from hash_forge.config.settings import DEFAULT_BCRYPT_ROUNDS, MIN_BCRYPT_ROUNDS
+from hash_forge.core.base_hasher import BaseHasher, SimpleHashParser
 from hash_forge.exceptions import InvalidHasherError
-from hash_forge.protocols import PHasher
 
 
-class BCryptSha256Hasher(PHasher):
+class BCryptSha256Hasher(BaseHasher):
     algorithm: ClassVar[str] = 'bcrypt_sha256'
     library_module: ClassVar[str] = 'bcrypt'
     digest: Callable[[bytes], Any] | None = cast(Callable[[bytes], Any], hashlib.sha256)
 
     def __init__(self, rounds: int = DEFAULT_BCRYPT_ROUNDS) -> None:
-        """
-        Initializes the BcryptHasher with the specified number of rounds.
-
-        Args:
-            rounds (int, optional): The number of rounds to use for hashing. Defaults to 12.
-        """
+        """Initialize BCrypt hasher with specified rounds."""
         if rounds < MIN_BCRYPT_ROUNDS:
             raise InvalidHasherError(f"BCrypt rounds must be at least {MIN_BCRYPT_ROUNDS}")
         self.bcrypt = self.load_library(self.library_module)
         self.rounds = rounds
 
-    __slots__ = ('rounds',)
+    __slots__ = ('rounds', 'bcrypt')
 
-    def hash(self, _string: str, /) -> str:
-        """
-        Hashes the given string using bcrypt algorithm.
-
-        Args:
-            _string (str): The string to be hashed.
-
-        Returns:
-            str: The formatted hash string containing the algorithm, rounds, salt, and hashed value.
-        """
-        encoded_string: bytes = _string.encode()
+    def _do_hash(self, string: str) -> str:
+        """Hash using BCrypt algorithm."""
+        encoded_string: bytes = string.encode()
         if self.digest is not None:
-            encoded_string = self._get_hexdigest(_string, self.digest)
+            encoded_string = self._get_hexdigest(string, self.digest)
         bcrypt_hashed: bytes = self.bcrypt.hashpw(encoded_string, self.bcrypt.gensalt(self.rounds))
         return self.algorithm + bcrypt_hashed.decode("ascii")
 
-    def verify(self, _string: str, _hashed_string: str, /) -> bool:
-        """
-        Verify if a given string matches the hashed string using bcrypt.
+    def _parse_hash(self, hashed_string: str) -> dict[str, Any] | None:
+        """Parse BCrypt hash format: algorithm$version$rounds$salt_hash."""
+        parsed = SimpleHashParser.parse_dollar_separated(hashed_string, 2)
+        if parsed:
+            parts = parsed['parts']
+            if len(parts) >= 3:
+                # BCrypt format: version$rounds$salt_hash
+                # parts[0] = version (e.g., '2b')
+                # parts[1] = rounds (e.g., '12')
+                # parts[2] = salt_hash
+                return {
+                    'algorithm': parsed['algorithm'],
+                    'hashed_val': '$'.join(parts),
+                    'rounds': int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else None
+                }
+        return None
 
-        Args:
-            _string (str): The plain text string to verify.
-            _hashed_string (str): The hashed string to compare against.
+    def _do_verify(self, string: str, parsed: dict[str, Any]) -> bool:
+        """Verify using BCrypt algorithm."""
+        encoded_string: bytes = string.encode()
+        if self.digest is not None:
+            encoded_string = self._get_hexdigest(string, self.digest)
+        return cast(bool, self.bcrypt.checkpw(encoded_string, ('$' + parsed['hashed_val']).encode('ascii')))
 
-        Returns:
-            bool: True if the plain text string matches the hashed string, False otherwise.
-        """
-        try:
-            algorithm, hashed_val = _hashed_string.split('$', 1)
-            if algorithm != self.algorithm:
-                return False
-            encoded_string: bytes = _string.encode()
-            if self.digest is not None:
-                encoded_string = self._get_hexdigest(_string, self.digest)
-            return cast(bool, self.bcrypt.checkpw(encoded_string, ('$' + hashed_val).encode('ascii')))
-        except (ValueError, TypeError, IndexError):
-            return False
-
-    def needs_rehash(self, _hashed_string: str, /) -> bool:
-        """
-        Check if the hashed string needs to be rehashed.
-
-        This method determines whether the provided hashed string needs to be rehashed
-        based on the algorithm and the number of rounds used during hashing.
-
-        Args:
-            _hashed_string (str): The hashed string to check.
-
-        Returns:
-            bool: True if the hashed string needs to be rehashed, False otherwise.
-        """
-        with suppress(ValueError):
-            algorithm, hashed_val = _hashed_string.split('$', 1)
-            if algorithm != self.algorithm:
-                return False
-            parts: list[str] = hashed_val.split('$')
-            if len(parts) < 3:
-                return False
-            return int(parts[2]) != self.rounds
-        return False
+    def _check_needs_rehash(self, parsed: dict[str, Any]) -> bool:
+        """Check if rounds count has changed."""
+        return parsed.get('rounds') != self.rounds if parsed.get('rounds') is not None else False
 
     @staticmethod
     def _get_hexdigest(_string: str, digest: Callable[[bytes], Any]) -> bytes:
-        """
-        Generate a hexadecimal digest for a given string using the specified digest function.
-
-        Args:
-            _string (str): The input string to be hashed.
-            digest (Callable): A callable digest function (e.g., hashlib.sha256).
-
-        Returns:
-            bytes: The hexadecimal representation of the digest.
-        """
+        """Generate hexadecimal digest for a string."""
         return binascii.hexlify(digest(_string.encode()).digest())
 
 

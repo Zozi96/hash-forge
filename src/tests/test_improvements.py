@@ -2,8 +2,8 @@
 import pytest
 
 from hash_forge import AlgorithmType, HashManager
+from hash_forge.core.factory import HasherFactory
 from hash_forge.exceptions import InvalidHasherError, UnsupportedAlgorithmError
-from hash_forge.factory import HasherFactory
 from hash_forge.hashers.pbkdf2_hasher import PBKDF2Sha256Hasher
 
 
