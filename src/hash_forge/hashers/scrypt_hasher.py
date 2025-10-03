@@ -5,7 +5,7 @@ import secrets
 from functools import lru_cache
 from typing import ClassVar
 
-from hash_forge.protocols import PHasher
+from hash_forge.core.protocols import PHasher
 
 
 @lru_cache

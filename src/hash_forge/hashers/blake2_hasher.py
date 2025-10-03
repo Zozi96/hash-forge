@@ -3,7 +3,7 @@ import hashlib
 import hmac
 from typing import ClassVar
 
-from hash_forge.protocols import PHasher
+from hash_forge.core.protocols import PHasher
 
 
 class Blake2Hasher(PHasher):
@@ -36,7 +36,7 @@ class Blake2Hasher(PHasher):
         hasher.update(_string.encode())
         hashed: bytes = hasher.digest()
         hashed_hex: str = binascii.hexlify(hashed).decode('ascii')
-        return '%s$%d$%s' % (self.algorithm, self.digest_size, hashed_hex)
+        return f'{self.algorithm}${self.digest_size}${hashed_hex}'
 
     def verify(self, _string: str, _hashed_string: str, /) -> bool:
         """

@@ -1,6 +1,6 @@
 import secrets
 
-from hash_forge.constants import RANDOM_STRING_CHARS
+from hash_forge.config.constants import RANDOM_STRING_CHARS
 
 
 def get_random_string(length: int, allowed_chars: str = RANDOM_STRING_CHARS) -> str:
