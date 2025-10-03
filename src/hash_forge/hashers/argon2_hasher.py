@@ -2,7 +2,7 @@ from contextlib import suppress
 from functools import partial
 from typing import Any, ClassVar, cast
 
-from hash_forge.protocols import PHasher
+from hash_forge.core.protocols import PHasher
 
 
 class Argon2Hasher(PHasher):

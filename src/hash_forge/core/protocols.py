@@ -8,6 +8,18 @@ class PHasher(Protocol):
     algorithm: ClassVar[str]
     library_module: ClassVar[str | None] = None
 
+    def can_handle(self, hashed_string: str) -> bool:
+        """
+        Check if this hasher can handle the given hashed string.
+
+        Args:
+            hashed_string: The hashed string to check
+
+        Returns:
+            bool: True if this hasher can handle the hash, False otherwise
+        """
+        return hashed_string.startswith(self.algorithm)
+
     @abstractmethod
     def hash(self, _string: str, /) -> str:
         """
