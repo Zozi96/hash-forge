@@ -36,6 +36,8 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["pytest>=8.4.2", "pytest-asyncio>=1.2.0", "ruff>=0.13.3"]
+[dependency-groups]
+dev = ["pytest>=8.4.2", "pytest-asyncio>=1.2.0", "ruff>=0.13.3"]
 
 [tool.mypy]
 files = "src/hash_forge"
@@ -45,6 +47,10 @@ disallow_untyped_defs = true
 warn_return_any = true
 
 [project.optional-dependencies]
+bcrypt = ["bcrypt==5.0.0"]
+argon2 = ["argon2-cffi==25.1.0"]
+crypto = ["pycryptodome==3.23.0"]
+blake3 = ["blake3==1.0.7"]
 bcrypt = ["bcrypt==5.0.0"]
 argon2 = ["argon2-cffi==25.1.0"]
 crypto = ["pycryptodome==3.23.0"]
