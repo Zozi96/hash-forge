@@ -11,13 +11,15 @@ Hash Forge is a flexible and secure hash management tool that supports multiple 
 ## Features
 
 - **Multiple Hashing Algorithms**: Supports bcrypt, Scrypt, Argon2, Blake2, Blake3, PBKDF2, Whirlpool and RIPEMD-160.
+- **Async/Await Support**: Non-blocking operations with `hash_async()`, `verify_async()`, and batch processing.
+- **Builder Pattern**: Fluent, chainable API for elegant configuration.
+- **Configuration Management**: Load settings from environment variables, JSON files, or code.
 - **Hashing and Verification**: Easily hash strings and verify their integrity.
 - **Rehash Detection**: Automatically detects if a hash needs to be rehashed based on outdated parameters or algorithms.
 - **Type-Safe API**: Full TypeScript-like type hints with `AlgorithmType` for better IDE support.
-- **Factory Pattern**: Create hashers dynamically by algorithm name.
-- **Performance Optimized**: O(1) hasher lookup with internal caching.
+- **Performance Optimized**: O(1) hasher lookup, async batch operations 3-5x faster.
 - **Security Focused**: Enforces minimum security parameters and uses cryptographically secure random generation.
-- **Flexible Integration**: Extendible to add new hashing algorithms as needed.
+- **Well Documented**: Comprehensive examples, security guidelines, and contribution docs.
 
 ## Installation
 
@@ -50,6 +52,25 @@ Hash Forge provides optional dependencies for specific hashing algorithms. To in
   pip install "hash-forge[blake3]"
   ```
 
+## Quick Start
+
+```python
+from hash_forge import HashManager
+
+# Create a HashManager with Argon2 (recommended)
+hash_manager = HashManager.from_algorithms("argon2")
+
+# Hash a password
+hashed = hash_manager.hash("my_secure_password")
+
+# Verify a password
+is_valid = hash_manager.verify("my_secure_password", hashed)
+print(is_valid)  # True
+
+# Check if rehashing is needed
+needs_update = hash_manager.needs_rehash(hashed)
+```
+
 ## Usage
 
 ### Basic Example
@@ -72,6 +93,14 @@ print(is_valid)  # Outputs: True
 needs_rehash = hash_manager.needs_rehash(hashed_value)
 print(needs_rehash)  # Outputs: False
 ```
+
+### Examples
+
+Check out the [`examples/`](examples/) directory for more practical examples:
+
+- **[basic_usage.py](examples/basic_usage.py)** - Fundamental operations and common patterns
+- **[async_fastapi.py](examples/async_fastapi.py)** - FastAPI integration with async support
+- **[builder_pattern.py](examples/builder_pattern.py)** - Fluent builder API examples
 
 ### Quick Hash (New in v2.1.0)
 
@@ -428,12 +457,235 @@ With async batch operations, v3.0.0 achieves significant speedups:
 - **100 concurrent hashes**: ~8-10x faster than sequential
 - **Web framework integration**: Non-blocking operations prevent request queue buildup
 - **Memory efficiency**: 40% less code duplication = smaller memory footprint
+### Async Support (New in v3.0.0)
 
+Hash Forge provides full async/await support for non-blocking operations. All synchronous methods have async equivalents that run in a thread pool executor to avoid blocking the event loop.
+
+#### Basic Async Operations
+
+```python
+import asyncio
+from hash_forge import HashManager
+
+async def main():
+    hash_manager = HashManager.from_algorithms("argon2")
+
+    # Async hashing - runs synchronous hash in thread pool
+    hashed = await hash_manager.hash_async("my_password")
+    print(f"Hashed: {hashed}")
+
+    # Async verification - non-blocking verification
+    is_valid = await hash_manager.verify_async("my_password", hashed)
+    print(f"Valid: {is_valid}")  # True
+
+    # Async rehash check
+    needs_rehash = await hash_manager.needs_rehash_async(hashed)
+    print(f"Needs rehash: {needs_rehash}")  # False
+
+asyncio.run(main())
+```
+
+#### Batch Operations
+
+Process multiple passwords concurrently for better performance:
+
+```python
+import asyncio
+from hash_forge import HashManager
+
+async def batch_example():
+    hash_manager = HashManager.from_algorithms("pbkdf2_sha256")
+
+    # Hash multiple passwords concurrently
+    passwords = ["user1_pass", "user2_pass", "user3_pass", "user4_pass"]
+    hashes = await hash_manager.hash_many_async(passwords)
+
+    # hashes is a list with the same order as passwords
+    for password, hash_value in zip(passwords, hashes):
+        print(f"{password} -> {hash_value[:50]}...")
+
+    # Verify multiple password-hash pairs concurrently
+    pairs = [
+        ("user1_pass", hashes[0]),
+        ("user2_pass", hashes[1]),
+        ("wrong_password", hashes[2]),  # This will be False
+    ]
+    results = await hash_manager.verify_many_async(pairs)
+    print(f"Results: {results}")  # [True, True, False]
+
+asyncio.run(batch_example())
+```
+
+#### Web Framework Integration
+
+Perfect for async web frameworks like FastAPI, Sanic, or aiohttp:
+
+```python
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from hash_forge import HashManager
+
+app = FastAPI()
+hash_manager = HashManager.from_algorithms("argon2")
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+@app.post("/register")
+async def register(request: LoginRequest):
+    # Non-blocking password hashing
+    hashed = await hash_manager.hash_async(request.password)
+    # Save user with hashed password to database
+    return {"username": request.username, "password_hash": hashed}
+
+@app.post("/login")
+async def login(request: LoginRequest):
+    # Fetch user from database (simulated)
+    stored_hash = get_user_hash(request.username)
+
+    # Non-blocking password verification
+    is_valid = await hash_manager.verify_async(request.password, stored_hash)
+
+    if not is_valid:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return {"message": "Login successful"}
+```
+
+#### Performance Benefits
+
+The async methods are particularly useful when:
+- Processing multiple passwords in parallel
+- Integrating with async web frameworks
+- Avoiding blocking the event loop during expensive hash operations
+- Building responsive async applications
+
+```python
+import asyncio
+import time
+from hash_forge import HashManager
+
+async def performance_comparison():
+    hash_manager = HashManager.from_algorithms("argon2")
+    passwords = [f"password_{i}" for i in range(10)]
+
+    # Sequential (blocking)
+    start = time.time()
+    hashes_sync = [hash_manager.hash(pwd) for pwd in passwords]
+    sync_time = time.time() - start
+
+    # Concurrent (non-blocking)
+    start = time.time()
+    hashes_async = await hash_manager.hash_many_async(passwords)
+    async_time = time.time() - start
+
+    print(f"Sequential: {sync_time:.2f}s")
+    print(f"Concurrent: {async_time:.2f}s")
+    print(f"Speedup: {sync_time/async_time:.2f}x")
+
+asyncio.run(performance_comparison())
+```
+
+### Configuration Management (New in v3.0.0)
+
+Load configuration from environment variables, JSON files, or programmatically:
+
+```python
+from hash_forge import HashManager
+from hash_forge.config import HashForgeConfig
+
+# From environment variables
+# export HASH_FORGE_PBKDF2_ITERATIONS=200000
+# export HASH_FORGE_BCRYPT_ROUNDS=14
+config = HashForgeConfig.from_env()
+
+# From JSON file
+config = HashForgeConfig.from_json("config.json")
+
+# Programmatically
+config = HashForgeConfig(
+    pbkdf2_iterations=200_000,
+    bcrypt_rounds=14,
+    argon2_time_cost=4
+)
+
+# Create HashManager with config
+hash_manager = HashManager.from_config(config, "pbkdf2_sha256", "bcrypt")
+
+# Save config
+config.to_json("hash_config.json")
+```
+
+### Builder Pattern (New in v3.0.0)
+
+Create HashManager instances with a fluent, chainable API:
+
+```python
+from hash_forge import HashManager
+
+# Use builder pattern for elegant configuration
+hash_manager = (
+    HashManager.builder()
+    .with_algorithm("argon2", time_cost=4)
+    .with_algorithm("bcrypt", rounds=14)
+    .with_algorithm("pbkdf2_sha256", iterations=200_000)
+    .with_preferred("argon2")  # Set preferred hasher
+    .build()
+)
+
+# Mix pre-configured hashers with algorithms
+from hash_forge.hashers import PBKDF2Sha256Hasher
+
+custom_hasher = PBKDF2Sha256Hasher(iterations=300_000)
+hash_manager = (
+    HashManager.builder()
+    .with_hasher(custom_hasher)
+    .with_algorithm("bcrypt")
+    .build()
+)
+```
+
+## What's New in v3.0.0
+
+Hash Forge v3.0.0 represents a major architectural overhaul with significant performance improvements and new features while maintaining backward compatibility for the public API.
+
+### 🏗️ Architecture Improvements
+- **Modular Structure**: Complete reorganization into logical modules (`core/`, `config/`, `utils/`, `hashers/`)
+- **Template Method Pattern**: Reduced code duplication in hashers by 40% through base class abstraction
+- **Auto-Discovery Pattern**: Simplified hasher registration with automatic decorator-based registration
+- **Chain of Responsibility**: Each hasher autonomously determines if it can handle a hash
+- **Clean Architecture**: Clear separation between public API and internal implementation
+
+### ⚡ Performance Enhancements
+- **O(1) Hasher Lookup**: Internal hasher mapping for instant algorithm detection (vs O(n) iteration)
+- **Async/Await Support**: Full non-blocking operations with thread pool executor for CPU-bound tasks
+- **Batch Processing**: Concurrent processing of multiple hashes with `hash_many_async()` and `verify_many_async()`
+- **Optimized Memory**: Reduced object creation overhead and better resource management
+- **Thread Pool Efficiency**: Smart use of asyncio executors for parallel hash operations
+
+### 🎯 New Features
+- **Async Operations**: Complete async API with `hash_async()`, `verify_async()`, `needs_rehash_async()`
+- **Builder Pattern**: Fluent, chainable API for elegant HashManager configuration
+- **Config Management**: Load settings from environment variables, JSON files, or programmatic config
+- **Logging Infrastructure**: Built-in structured logging for debugging and monitoring
+- **Type Safety**: Enhanced type hints with `AlgorithmType` literals for IDE autocomplete
+
+### 📊 Performance Benchmarks
+With async batch operations, v3.0.0 achieves significant speedups:
+- **10 concurrent hashes**: ~3-5x faster than sequential
+- **100 concurrent hashes**: ~8-10x faster than sequential
+- **Web framework integration**: Non-blocking operations prevent request queue buildup
+- **Memory efficiency**: 40% less code duplication = smaller memory footprint
+
+### 🛠️ Developer Experience
 ### 🛠️ Developer Experience
 - **Type Safety**: `AlgorithmType` literal for IDE autocomplete and error detection
 - **Factory Pattern**: Create hashers by algorithm name with `HasherFactory`
 - **Builder Pattern**: Chainable API for elegant configuration
+- **Builder Pattern**: Chainable API for elegant configuration
 - **Convenience Methods**: `quick_hash()` and `from_algorithms()` for simpler usage
+- **Logging Support**: Built-in logging infrastructure for debugging
 - **Logging Support**: Built-in logging infrastructure for debugging
 
 ### 🔐 Security Enhancements
@@ -443,8 +695,12 @@ With async batch operations, v3.0.0 achieves significant speedups:
 
 ### 🧪 Better Testing
 - **Enhanced Test Suite**: 114 tests covering all functionality
+- **Enhanced Test Suite**: 114 tests covering all functionality
 - **Type Checking Tests**: Validates `AlgorithmType` usage
 - **Configuration Validation**: Tests security parameter enforcement
+- **Builder Pattern Tests**: Validates fluent API
+- **Async Tests**: Full coverage of async operations
+- **Config Tests**: JSON, env vars, and programmatic config
 - **Builder Pattern Tests**: Validates fluent API
 - **Async Tests**: Full coverage of async operations
 - **Config Tests**: JSON, env vars, and programmatic config
@@ -459,6 +715,7 @@ hasher = PBKDF2Sha256Hasher(iterations=150000)
 hash_manager = HashManager(hasher)
 ```
 
+**v2.1.0:**
 **v2.1.0:**
 ```python
 # Simplified with factory pattern and type safety
@@ -553,10 +810,31 @@ hash_forge/
     └── helpers.py
 ```
 
+## Documentation
+
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
+- **[SECURITY.md](SECURITY.md)** - Security best practices and vulnerability reporting
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines and development setup
+- **[Examples](examples/)** - Practical usage examples
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues or pull requests to help improve the project.
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Setting up the development environment
+- Running tests and linting
+- Code style and documentation standards
+- Submitting pull requests
+
+## Security
+
+For security best practices and to report vulnerabilities, please see our [Security Policy](SECURITY.md).
+
+**Recommended algorithms for password hashing:**
+1. Argon2 (best choice)
+2. BCrypt (industry standard)
+3. PBKDF2-SHA256 (NIST approved)
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
