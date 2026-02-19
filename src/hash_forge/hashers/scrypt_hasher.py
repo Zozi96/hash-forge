@@ -2,24 +2,9 @@ import base64
 import hashlib
 import hmac
 import secrets
-from functools import lru_cache
 from typing import ClassVar
 
 from hash_forge.core.protocols import PHasher
-
-
-@lru_cache
-def _generate_salt(salt: int) -> str:
-    """
-    Generates a base64-encoded salt string.
-
-    Args:
-        salt (int): The number of bytes to generate for the salt.
-
-    Returns:
-        str: A base64-encoded string representation of the generated salt.
-    """
-    return base64.b64encode(secrets.token_bytes(salt)).decode("ascii")
 
 
 class ScryptHasher(PHasher):
@@ -88,8 +73,24 @@ class ScryptHasher(PHasher):
         Returns:
             bool: True if the original string matches the hashed string, False otherwise.
         """
-        encoded = self.hash(_string)
-        return hmac.compare_digest(_hashed_string, encoded)
+        try:
+            parts = _hashed_string.split("$", 5)
+            if len(parts) != 6:
+                return False
+            _, n_str, salt, r_str, p_str, stored_hash = parts
+            hashed = hashlib.scrypt(
+                _string.encode(),
+                salt=salt.encode(),
+                n=int(n_str),
+                r=int(r_str),
+                p=int(p_str),
+                maxmem=self.maxmem,
+                dklen=self.dklen,
+            )
+            computed = base64.b64encode(hashed).decode("ascii").strip()
+            return hmac.compare_digest(stored_hash, computed)
+        except (ValueError, TypeError):
+            return False
 
     def needs_rehash(self, _hashed_string: str) -> bool:
         """
@@ -113,4 +114,4 @@ class ScryptHasher(PHasher):
         Returns:
             str: A string representing the generated salt.
         """
-        return _generate_salt(self.salt_length)
+        return base64.b64encode(secrets.token_bytes(self.salt_length)).decode("ascii")

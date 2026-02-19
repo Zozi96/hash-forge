@@ -1,4 +1,5 @@
 """Factory for creating hashers."""
+
 from collections.abc import Sequence
 from typing import Any, TypeVar, cast
 
@@ -6,7 +7,7 @@ from hash_forge.core.protocols import PHasher
 from hash_forge.exceptions import UnsupportedAlgorithmError
 from hash_forge.types import AlgorithmType
 
-T = TypeVar('T', bound=type[PHasher])
+T = TypeVar("T", bound=type[PHasher])
 
 
 class HasherFactory:
@@ -29,9 +30,11 @@ class HasherFactory:
             class PBKDF2Sha256Hasher(PHasher):
                 ...
         """
+
         def decorator(hasher_class: T) -> T:
             cls._registry[algorithm] = hasher_class
             return hasher_class
+
         return decorator
 
     @classmethod
@@ -77,14 +80,15 @@ class HasherFactory:
 def register_default_hashers() -> None:
     """Register all default hashers with the factory using auto-discovery."""
     hasher_imports = [
-        ('hash_forge.hashers.pbkdf2_hasher', ['PBKDF2Sha256Hasher', 'PBKDF2Sha1Hasher']),
-        ('hash_forge.hashers.bcrypt_hasher', ['BCryptHasher', 'BCryptSha256Hasher']),
-        ('hash_forge.hashers.argon2_hasher', ['Argon2Hasher']),
-        ('hash_forge.hashers.scrypt_hasher', ['ScryptHasher']),
-        ('hash_forge.hashers.blake2_hasher', ['Blake2Hasher']),
-        ('hash_forge.hashers.blake3_hasher', ['Blake3Hasher']),
-        ('hash_forge.hashers.whirlpool_hasher', ['WhirlpoolHasher']),
-        ('hash_forge.hashers.ripemd160_hasher', ['Ripemd160Hasher']),
+        ("hash_forge.hashers.pbkdf2_hasher", ["PBKDF2Sha256Hasher", "PBKDF2Sha1Hasher"]),
+        ("hash_forge.hashers.bcrypt_hasher", ["BCryptHasher", "BCryptSha256Hasher"]),
+        ("hash_forge.hashers.argon2_hasher", ["Argon2Hasher"]),
+        ("hash_forge.hashers.scrypt_hasher", ["ScryptHasher"]),
+        ("hash_forge.hashers.blake2_hasher", ["Blake2Hasher"]),
+        ("hash_forge.hashers.blake3_hasher", ["Blake3Hasher"]),
+        ("hash_forge.hashers.whirlpool_hasher", ["WhirlpoolHasher"]),
+        ("hash_forge.hashers.ripemd160_hasher", ["Ripemd160Hasher"]),
+        ("hash_forge.hashers.sha3_hasher", ["SHA3_256Hasher", "SHA3_512Hasher"]),
     ]
 
     for module_path, hasher_classes in hasher_imports:
@@ -93,7 +97,7 @@ def register_default_hashers() -> None:
             for hasher_name in hasher_classes:
                 hasher_class = getattr(module, hasher_name)
                 # Auto-register using the hasher's algorithm attribute
-                if hasattr(hasher_class, 'algorithm'):
+                if hasattr(hasher_class, "algorithm"):
                     HasherFactory.register_class(hasher_class.algorithm, hasher_class)
         except ImportError:
             # Silently skip if optional dependencies are not installed

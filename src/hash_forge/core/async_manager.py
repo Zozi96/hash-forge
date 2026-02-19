@@ -48,7 +48,7 @@ class AsyncHashMixin:
             hash_manager = HashManager.from_algorithms("argon2")
             hashed = await hash_manager.hash_async("my_password")
         """
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         logger.debug(f"Async hashing with {self.preferred_hasher.algorithm}")
         return await loop.run_in_executor(None, self.hash, string)
 
@@ -69,7 +69,7 @@ class AsyncHashMixin:
         Example:
             is_valid = await hash_manager.verify_async("my_password", hashed)
         """
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         logger.debug("Async verification")
         return await loop.run_in_executor(None, self.verify, string, hashed_string)
 
@@ -89,7 +89,7 @@ class AsyncHashMixin:
         Example:
             needs_update = await hash_manager.needs_rehash_async(hashed)
         """
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         logger.debug("Async rehash check")
         return await loop.run_in_executor(None, self.needs_rehash, hashed_string)
 

@@ -5,6 +5,7 @@ from .blake3_hasher import Blake3Hasher
 from .pbkdf2_hasher import PBKDF2Sha1Hasher, PBKDF2Sha256Hasher
 from .ripemd160_hasher import Ripemd160Hasher
 from .scrypt_hasher import ScryptHasher
+from .sha3_hasher import SHA3_256Hasher, SHA3_512Hasher
 from .whirlpool_hasher import WhirlpoolHasher
 
 __all__ = [
@@ -14,6 +15,8 @@ __all__ = [
     "PBKDF2Sha256Hasher",
     "PBKDF2Sha1Hasher",
     "ScryptHasher",
+    "SHA3_256Hasher",
+    "SHA3_512Hasher",
     "Blake2Hasher",
     "Ripemd160Hasher",
     "WhirlpoolHasher",
