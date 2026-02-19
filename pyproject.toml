@@ -1,6 +1,6 @@
 [project]
 name = "hash-forge"
-version = "3.0.1"
+version = "3.1.0"
 description = "Hash Forge is a lightweight Python library designed to simplify the process of hashing and verifying data using a variety of secure hashing algorithms."
 readme = "README.md"
 authors = [{ name = "Zozi", email = "zozi.fer96@gmail.com" }]
@@ -13,6 +13,7 @@ keywords = [
     "pbkdf2",
     "scrypt",
     "blake2",
+    "sha3",
     "Whirlpool",
     "RIPEMD-160",
     "blake3",
@@ -20,7 +21,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -29,14 +29,14 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 urls = { "Homepage" = "https://github.com/Zozi96/hash-forge", "Repository" = "https://github.com/Zozi96/hash-forge", "Issue Tracker" = "https://github.com/Zozi96/hash-forge/issues" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["pytest>=8.4.2", "pytest-asyncio>=1.2.0", "ruff>=0.13.3"]
+dev = ["pytest>=9.0.2", "pytest-asyncio>=1.3.0", "ruff>=0.15.1"]
 
 [tool.mypy]
 files = "src/hash_forge"

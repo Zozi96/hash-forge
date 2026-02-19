@@ -1,4 +1,7 @@
 """Hash Manager - Main orchestrator for hash operations."""
+
+from typing import Any
+
 from hash_forge.config.config_loader import HashForgeConfig
 from hash_forge.config.logging import get_logger
 from hash_forge.core.async_manager import AsyncHashMixin
@@ -8,7 +11,7 @@ from hash_forge.core.protocols import PHasher
 from hash_forge.exceptions import InvalidHasherError
 from hash_forge.types import AlgorithmType
 
-logger = get_logger('manager')
+logger = get_logger("manager")
 
 
 class HashManager(AsyncHashMixin):
@@ -192,4 +195,60 @@ class HashManager(AsyncHashMixin):
             )
         """
         from hash_forge.core.builder import HashManagerBuilder
+
         return HashManagerBuilder()
+
+    def rotate(self, string: str, old_hash: str) -> str | None:
+        """
+        Re-hash a string if verification against the old hash succeeds.
+
+        Useful for migrating hashes to a new preferred algorithm or updated
+        parameters without exposing the plaintext password to the caller.
+
+        Args:
+            string: The plain text string to verify and re-hash.
+            old_hash: The existing hash to verify against.
+
+        Returns:
+            A new hash produced by the preferred hasher, or ``None`` if
+            verification fails.
+        """
+        if not self.verify(string, old_hash):
+            return None
+        return self.preferred_hasher.hash(string)
+
+    def inspect(self, hashed_string: str) -> dict[str, Any] | None:
+        """
+        Return metadata about a hashed string without exposing the raw hash.
+
+        Args:
+            hashed_string: The hashed string to inspect.
+
+        Returns:
+            A dictionary with at least an ``"algorithm"`` key and any
+            algorithm-specific parameters (e.g. ``iterations``, ``rounds``),
+            or ``None`` if no registered hasher recognises the hash.
+        """
+        hasher = self._get_hasher_by_hash(hashed_string)
+        if hasher is None:
+            return None
+        info: dict[str, Any] = {"algorithm": hasher.algorithm}
+        if hasattr(hasher, "_parse_hash"):
+            parsed = hasher._parse_hash(hashed_string)  # type: ignore[union-attr]
+            if parsed:
+                skip = {"algorithm", "hash", "salt", "hashed_val", "parts"}
+                info.update({k: v for k, v in parsed.items() if k not in skip})
+        return info
+
+    def list_algorithms(self) -> list[str]:
+        """
+        Return the algorithm names registered in this manager instance.
+
+        Returns:
+            A list of algorithm identifier strings in insertion order.
+        """
+        return [name for name, _ in self.hashers]
+
+    def __repr__(self) -> str:
+        algorithms = [name for name, _ in self.hashers]
+        return f"HashManager(preferred={self.preferred_hasher.algorithm!r}, algorithms={algorithms!r})"
