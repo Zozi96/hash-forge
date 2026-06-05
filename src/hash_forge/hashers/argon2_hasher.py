@@ -2,7 +2,9 @@ from contextlib import suppress
 from functools import partial
 from typing import Any, ClassVar, cast
 
+from hash_forge.config.settings import MIN_ARGON2_MEMORY_COST, MIN_ARGON2_TIME_COST
 from hash_forge.core.protocols import PHasher
+from hash_forge.exceptions import InvalidHasherError
 
 
 class Argon2Hasher(PHasher):
@@ -28,6 +30,16 @@ class Argon2Hasher(PHasher):
             hash_len (int | None): The length of the resulting hash. Defaults to None.
         """
         self.argon2 = self.load_library(self.library_module)
+        if time_cost is not None and time_cost < MIN_ARGON2_TIME_COST:
+            raise InvalidHasherError(f"Argon2 time_cost must be at least {MIN_ARGON2_TIME_COST}")
+        if memory_cost is not None and memory_cost < MIN_ARGON2_MEMORY_COST:
+            raise InvalidHasherError(f"Argon2 memory_cost must be at least {MIN_ARGON2_MEMORY_COST}")
+        if parallelism is not None and parallelism < 1:
+            raise InvalidHasherError("Argon2 parallelism must be positive")
+        if hash_len is not None and hash_len < 1:
+            raise InvalidHasherError("Argon2 hash_len must be positive")
+        if salt_len is not None and salt_len < 1:
+            raise InvalidHasherError("Argon2 salt_len must be positive")
         self.time_cost = time_cost
         self.memory_cost = memory_cost
         self.parallelism = parallelism
@@ -35,7 +47,7 @@ class Argon2Hasher(PHasher):
         self.salt_len = salt_len
         self.ph = self._get_hasher()
 
-    __slots__ = ("argon2", "time_cost", "memory_cost", "parallelism", "hash_len", "salt_len")
+    __slots__ = ("argon2", "time_cost", "memory_cost", "parallelism", "hash_len", "salt_len", "ph")
 
     def hash(self, _string: str, /) -> str:
         """

@@ -30,7 +30,7 @@ def hash_manager_instance() -> HashManager:
         ScryptHasher(),
         Ripemd160Hasher(),
         Blake2Hasher("MySecretKey"),
-        WhirlpoolHasher(),
+        WhirlpoolHasher(allow_legacy_hashing=True),
     )
 
 
@@ -119,8 +119,7 @@ def test_needs_rehash_true_due_to_iterations(hash_manager_instance: HashManager)
     Args:
         hash_manager_instance (HashManager): An instance of the HashManager class.
     """
-    old_pbkdf2_hasher = PBKDF2Sha256Hasher(iterations=100_000)
-    old_hashed = old_pbkdf2_hasher.hash("HashManagerTestData!")
+    old_hashed = "pbkdf2_sha256$100000$salt$8e8053a81e39da9f41b2af22f6ecb78204fa2ea51c4e784f48fc972b4aa7fc40"
     assert hash_manager_instance.needs_rehash(old_hashed) is True
 
 

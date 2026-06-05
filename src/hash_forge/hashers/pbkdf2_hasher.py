@@ -36,13 +36,16 @@ class PBKDF2Sha256Hasher(BaseHasher):
     def _parse_hash(self, hashed_string: str) -> dict[str, Any] | None:
         """Parse PBKDF2 hash format: algorithm$iterations$salt$hash."""
         parsed = SimpleHashParser.parse_dollar_separated(hashed_string, 4)
-        if parsed and len(parsed['parts']) >= 3:
-            return {
-                'algorithm': parsed['algorithm'],
-                'iterations': int(parsed['parts'][0]),
-                'salt': parsed['parts'][1],
-                'hash': parsed['parts'][2]
-            }
+        if parsed and len(parsed['parts']) == 3:
+            try:
+                return {
+                    'algorithm': parsed['algorithm'],
+                    'iterations': int(parsed['parts'][0]),
+                    'salt': parsed['parts'][1],
+                    'hash': parsed['parts'][2]
+                }
+            except ValueError:
+                return None
         return None
 
     def _do_verify(self, string: str, parsed: dict[str, Any]) -> bool:
@@ -54,11 +57,11 @@ class PBKDF2Sha256Hasher(BaseHasher):
             parsed['iterations']
         )
         hashed_input: str = binascii.hexlify(dk).decode('ascii')
-        return hmac.compare_digest(parsed['hash'], hashed_input)
+        return hmac.compare_digest(str(parsed['hash']), hashed_input)
 
     def _check_needs_rehash(self, parsed: dict[str, Any]) -> bool:
         """Check if iterations count has changed."""
-        return parsed['iterations'] != self.iterations
+        return int(parsed['iterations']) != self.iterations
 
 
 class PBKDF2Sha1Hasher(PBKDF2Sha256Hasher):

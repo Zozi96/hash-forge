@@ -1,5 +1,6 @@
 import pytest
 
+from hash_forge.exceptions import InvalidHasherError
 from hash_forge.hashers import ScryptHasher
 
 
@@ -103,7 +104,7 @@ def test_scrypt_needs_rehash_true(scrypt_hasher: ScryptHasher) -> None:
         True if the `needs_rehash` method correctly identifies that the old hash
         needs rehashing.
     """
-    old_hasher = ScryptHasher(work_factor=2**10)
+    old_hasher = ScryptHasher(work_factor=2**16)
     old_hashed: str = old_hasher.hash("TestData123!")
     assert scrypt_hasher.needs_rehash(old_hashed) is True
 
@@ -119,3 +120,14 @@ def test_scrypt_invalid_hash_format(scrypt_hasher: ScryptHasher) -> None:
         The verify method should return False when provided with an invalid hash format.
     """
     assert scrypt_hasher.verify("TestData123!", "invalid$hash$format") is False
+
+
+def test_scrypt_rejects_low_work_factor() -> None:
+    with pytest.raises(InvalidHasherError):
+        ScryptHasher(work_factor=2**10)
+
+
+def test_scrypt_rejects_high_stored_cost(scrypt_hasher: ScryptHasher) -> None:
+    hashed = scrypt_hasher.hash("TestData123!")
+    malicious = hashed.replace("scrypt$32768$", "scrypt$2097152$", 1)
+    assert scrypt_hasher.verify("TestData123!", malicious) is False

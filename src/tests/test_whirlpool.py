@@ -1,6 +1,12 @@
 import pytest
 
+from hash_forge.exceptions import InvalidHasherError
 from hash_forge.hashers import WhirlpoolHasher
+
+LEGACY_WHIRLPOOL_HASH = (
+    "whirlpool$b3f5d7a98335e97305c10105212e2fabf3a0cb90ddf9d295b5f7af9cd5dd0c"
+    "481e57395b834a1aba595d883a4e81f0665487b97840bcba1ef9142ebe9908691e"
+)
 
 
 @pytest.fixture
@@ -14,7 +20,24 @@ def whirlpool_hasher() -> WhirlpoolHasher:
     return WhirlpoolHasher()
 
 
-def test_whirlpool_hash_format(whirlpool_hasher: WhirlpoolHasher) -> None:
+def test_whirlpool_new_hashing_disabled_by_default() -> None:
+    hasher = WhirlpoolHasher()
+    with pytest.raises(InvalidHasherError):
+        hasher.hash("TestData123!")
+
+
+def test_whirlpool_legacy_hashing_opt_in() -> None:
+    hasher = WhirlpoolHasher(allow_legacy_hashing=True)
+    hashed = hasher.hash("TestData123!")
+    assert hashed.startswith("whirlpool$")
+
+
+def test_whirlpool_verify_can_be_disabled() -> None:
+    hasher = WhirlpoolHasher(allow_legacy_verify=False, allow_legacy_hashing=True)
+    assert hasher.verify("TestData123!", LEGACY_WHIRLPOOL_HASH) is False
+
+
+def test_whirlpool_legacy_hash_format() -> None:
     """
     Test the format of the Whirlpool hashed string.
 
@@ -22,14 +45,11 @@ def test_whirlpool_hash_format(whirlpool_hasher: WhirlpoolHasher) -> None:
     follows the expected format. The format is expected to be:
     'whirlpool$hash'.
 
-    Args:
-        whirlpool_hasher (WhirlpoolHasher): An instance of the WhirlpoolHasher class.
-
     Assertions:
         - The hashed string should be split into 2 parts using the '$' delimiter.
         - The first part should be 'whirlpool'.
     """
-    hashed: str = whirlpool_hasher.hash("TestData123!")
+    hashed = LEGACY_WHIRLPOOL_HASH
     parts: list[str] = hashed.split("$")
     assert len(parts) == 2, "Hash format is incorrect; expected 2 parts separated by '$'."
     assert parts[0] == "whirlpool", "Algorithm name in hash does not match 'whirlpool'."
@@ -51,7 +71,7 @@ def test_whirlpool_verify_correct_data(whirlpool_hasher: WhirlpoolHasher) -> Non
         returns True.
     """
     data = "TestData123!"
-    hashed: str = whirlpool_hasher.hash(data)
+    hashed = LEGACY_WHIRLPOOL_HASH
     assert whirlpool_hasher.verify(data, hashed) is True, "Verification failed for correct data."
 
 
@@ -69,8 +89,7 @@ def test_whirlpool_verify_incorrect_data(whirlpool_hasher: WhirlpoolHasher) -> N
         The verify method should return False when the provided data does not
         match the hashed data.
     """
-    data = "TestData123!"
-    hashed: str = whirlpool_hasher.hash(data)
+    hashed = LEGACY_WHIRLPOOL_HASH
     assert whirlpool_hasher.verify("WrongData", hashed) is False, "Verification incorrectly succeeded for wrong data."
 
 
@@ -84,7 +103,7 @@ def test_whirlpool_needs_rehash_false(whirlpool_hasher: WhirlpoolHasher) -> None
     Asserts:
         The hashed password does not need rehashing.
     """
-    hashed: str = whirlpool_hasher.hash("TestData123!")
+    hashed = LEGACY_WHIRLPOOL_HASH
     assert whirlpool_hasher.needs_rehash(hashed) is False, "needs_rehash incorrectly returned True for fresh hash."
 
 
@@ -102,8 +121,7 @@ def test_whirlpool_needs_rehash_true(whirlpool_hasher: WhirlpoolHasher) -> None:
         True if the `needs_rehash` method correctly identifies that the old hash
         needs rehashing.
     """
-    data = "TestData123!"
-    hashed: str = whirlpool_hasher.hash(data)
+    hashed = LEGACY_WHIRLPOOL_HASH
     # Simulate an outdated hash by changing the algorithm name
     old_hashed = hashed.replace("whirlpool$", "oldalgo$", 1)
     assert whirlpool_hasher.needs_rehash(old_hashed) is True, "needs_rehash failed to identify outdated hash."

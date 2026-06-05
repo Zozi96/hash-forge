@@ -3,6 +3,22 @@ from abc import abstractmethod
 from types import ModuleType
 from typing import ClassVar, Protocol
 
+EXTRA_BY_MODULE: dict[str, str] = {
+    "argon2": "argon2",
+    "bcrypt": "bcrypt",
+    "blake3": "blake3",
+    "Crypto.Hash.RIPEMD160": "crypto",
+    "Crypto.Hash.SHA512": "crypto",
+}
+
+
+def get_algorithm_token(hashed_string: str) -> str | None:
+    """Return the exact algorithm token from a dollar-delimited hash."""
+    algorithm, separator, _ = hashed_string.partition("$")
+    if not separator or not algorithm:
+        return None
+    return algorithm
+
 
 class PHasher(Protocol):
     algorithm: ClassVar[str]
@@ -18,7 +34,7 @@ class PHasher(Protocol):
         Returns:
             bool: True if this hasher can handle the hash, False otherwise
         """
-        return hashed_string.startswith(self.algorithm)
+        return get_algorithm_token(hashed_string) == self.algorithm
 
     @abstractmethod
     def hash(self, _string: str, /) -> str:
@@ -90,6 +106,7 @@ class PHasher(Protocol):
         try:
             return importlib.import_module(name=name)
         except ImportError:
+            extra = EXTRA_BY_MODULE.get(name, name)
             raise ImportError(
-                f'{name} is not installed. Please install {name} to use this hasher. (pip install hash-forge[{name}])'
+                f"{name} is not installed. Please install hash-forge[{extra}] to use this hasher."
             ) from None

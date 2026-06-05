@@ -1,6 +1,10 @@
 name: Tests
 
 on:
+  push:
+    branches:
+      - develop
+      - main
   pull_request:
     branches:
       - develop
@@ -14,10 +18,10 @@ jobs:
         python-version: [3.11, 3.12, 3.13, 3.14]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -28,4 +32,13 @@ jobs:
         run: uv sync --all-extras
 
       - name: Run Pytest
-        run: uv run pytest
+        run: uv run pytest --cov=hash_forge --cov-report=term-missing
+
+      - name: Build package
+        run: uv build
+
+      - name: Smoke install wheel
+        run: |
+          python -m venv /tmp/hash-forge-smoke
+          /tmp/hash-forge-smoke/bin/pip install dist/*.whl
+          /tmp/hash-forge-smoke/bin/python -c "from hash_forge import HashManager; print(HashManager.quick_hash('smoke')[:20])"

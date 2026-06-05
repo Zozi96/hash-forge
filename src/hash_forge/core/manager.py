@@ -7,8 +7,9 @@ from hash_forge.config.logging import get_logger
 from hash_forge.core.async_manager import AsyncHashMixin
 from hash_forge.core.builder import HashManagerBuilder
 from hash_forge.core.factory import HasherFactory
-from hash_forge.core.protocols import PHasher
+from hash_forge.core.protocols import PHasher, get_algorithm_token
 from hash_forge.exceptions import InvalidHasherError
+from hash_forge.policy import PasswordHashPolicy, canonical_algorithm, classify_algorithm
 from hash_forge.types import AlgorithmType
 
 logger = get_logger("manager")
@@ -28,16 +29,17 @@ class HashManager(AsyncHashMixin):
             InvalidHasherError: If no hashers are provided.
 
         Attributes:
-            hashers (Set[Tuple[str, PHasher]]): A set of tuples containing the algorithm name and the hasher instance.
+            hashers: ordered tuples containing the algorithm name and the hasher instance.
             hasher_map (Dict[str, PHasher]): A mapping of algorithm names to hasher instances for O(1) lookup.
             preferred_hasher (PHasher): The first hasher provided, used as the preferred hasher.
         """
         if not hashers:
             raise InvalidHasherError("At least one hasher is required.")
-        self.hashers: set[tuple[str, PHasher]] = {(hasher.algorithm, hasher) for hasher in hashers}
+        self.hashers: tuple[tuple[str, PHasher], ...] = tuple((hasher.algorithm, hasher) for hasher in hashers)
         # Create a mapping for O(1) hasher lookup
         self.hasher_map: dict[str, PHasher] = {hasher.algorithm: hasher for hasher in hashers}
         self.preferred_hasher: PHasher = hashers[0]
+        self.policy: PasswordHashPolicy | None = None
         logger.info(
             f"HashManager initialized with {len(hashers)} hasher(s), preferred: {self.preferred_hasher.algorithm}"
         )
@@ -52,6 +54,8 @@ class HashManager(AsyncHashMixin):
         Returns:
             str: The hashed string.
         """
+        if self.policy is not None:
+            self.policy.validate_for_hashing(self.preferred_hasher.algorithm)
         return self.preferred_hasher.hash(string)
 
     def verify(self, string: str, hashed_string: str) -> bool:
@@ -69,6 +73,12 @@ class HashManager(AsyncHashMixin):
         if hasher is None:
             logger.warning(f"No hasher found for hash string: {hashed_string[:20]}...")
             return False
+        if self.policy is not None:
+            try:
+                self.policy.validate_for_verify(hasher.algorithm)
+            except ValueError:
+                logger.debug(f"Verification blocked by policy for {hasher.algorithm}")
+                return False
         logger.debug(f"Verifying with {hasher.algorithm}")
         return hasher.verify(string, hashed_string)
 
@@ -89,7 +99,10 @@ class HashManager(AsyncHashMixin):
         hasher: PHasher | None = self._get_hasher_by_hash(hashed_string)
         if hasher is None:
             return True
-        return hasher.needs_rehash(hashed_string)
+        manager_needs_rehash = hasher.needs_rehash(hashed_string)
+        if self.policy is not None:
+            return self.policy.needs_update(hasher.algorithm, manager_needs_rehash)
+        return manager_needs_rehash
 
     def _get_hasher_by_hash(self, hashed_string: str) -> PHasher | None:
         """
@@ -105,7 +118,13 @@ class HashManager(AsyncHashMixin):
             PHasher | None: The hasher instance that matches the hashed string, or
             None if no match is found.
         """
-        # Chain of Responsibility: each hasher decides if it can handle the hash
+        algorithm = get_algorithm_token(hashed_string)
+        if algorithm is not None:
+            hasher = self.hasher_map.get(algorithm)
+            if hasher is not None:
+                logger.debug(f"Hasher {hasher.algorithm} can handle the hash")
+                return hasher
+
         for _, hasher in self.hashers:
             if hasher.can_handle(hashed_string):
                 logger.debug(f"Hasher {hasher.algorithm} can handle the hash")
@@ -115,7 +134,7 @@ class HashManager(AsyncHashMixin):
         return None
 
     @classmethod
-    def from_algorithms(cls, *algorithms: AlgorithmType, **kwargs) -> "HashManager":
+    def from_algorithms(cls, *algorithms: AlgorithmType, **kwargs: Any) -> "HashManager":
         """
         Create a HashManager instance using algorithm names.
 
@@ -161,8 +180,26 @@ class HashManager(AsyncHashMixin):
             hashers.append(hasher)
         return cls(*hashers)
 
+    @classmethod
+    def from_policy(cls, policy: PasswordHashPolicy) -> "HashManager":
+        """
+        Create a HashManager from a password hashing policy.
+
+        Args:
+            policy: PasswordHashPolicy instance with preferred algorithm, allowed algorithms,
+                and algorithm-specific constructor options.
+        """
+        ordered_algorithms = (
+            policy.preferred_algorithm,
+            *tuple(a for a in policy.algorithms if a != policy.preferred_algorithm),
+        )
+        hashers = [HasherFactory.create(algorithm, **policy.options_for(algorithm)) for algorithm in ordered_algorithms]
+        manager = cls(*hashers)
+        manager.policy = policy
+        return manager
+
     @staticmethod
-    def quick_hash(string: str, algorithm: AlgorithmType = "pbkdf2_sha256", **kwargs) -> str:
+    def quick_hash(string: str, algorithm: AlgorithmType = "pbkdf2_sha256", **kwargs: Any) -> str:
         """
         Quickly hash a string using the specified algorithm.
 
@@ -217,6 +254,16 @@ class HashManager(AsyncHashMixin):
             return None
         return self.preferred_hasher.hash(string)
 
+    def verify_and_update(self, string: str, hashed_string: str) -> tuple[bool, str | None]:
+        """
+        Verify a string and return a replacement hash when policy or parameters require it.
+        """
+        if not self.verify(string, hashed_string):
+            return False, None
+        if not self.needs_rehash(hashed_string):
+            return True, None
+        return True, self.hash(string)
+
     def inspect(self, hashed_string: str) -> dict[str, Any] | None:
         """
         Return metadata about a hashed string without exposing the raw hash.
@@ -232,9 +279,16 @@ class HashManager(AsyncHashMixin):
         hasher = self._get_hasher_by_hash(hashed_string)
         if hasher is None:
             return None
-        info: dict[str, Any] = {"algorithm": hasher.algorithm}
-        if hasattr(hasher, "_parse_hash"):
-            parsed = hasher._parse_hash(hashed_string)  # type: ignore[union-attr]
+        canonical = canonical_algorithm(hasher.algorithm)
+        category = classify_algorithm(hasher.algorithm)
+        info: dict[str, Any] = {
+            "algorithm": canonical,
+            "category": category,
+            "deprecated": category == "deprecated",
+        }
+        parse_hash = getattr(hasher, "_parse_hash", None)
+        if callable(parse_hash):
+            parsed = parse_hash(hashed_string)
             if parsed:
                 skip = {"algorithm", "hash", "salt", "hashed_val", "parts"}
                 info.update({k: v for k, v in parsed.items() if k not in skip})

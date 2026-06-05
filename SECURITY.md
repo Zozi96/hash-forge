@@ -6,6 +6,8 @@ We release patches for security vulnerabilities in the following versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 3.2.x   | :white_check_mark: |
+| 3.1.x   | :white_check_mark: |
 | 3.0.x   | :white_check_mark: |
 | 2.1.x   | :white_check_mark: |
 | < 2.0   | :x:                |
@@ -38,15 +40,10 @@ Hash Forge supports multiple algorithms. For **password hashing**, we recommend 
 
 1. **Argon2** (Argon2id variant) - Winner of Password Hashing Competition
    ```python
-   from hash_forge import HashManager
+   from hash_forge import HashManager, PasswordHashPolicy
 
-   # Recommended settings for web applications
-   hash_manager = HashManager.from_algorithms(
-       "argon2",
-       time_cost=3,        # Number of iterations
-       memory_cost=65536,  # 64 MB memory
-       parallelism=4       # 4 parallel threads
-   )
+   # Requires: pip install "hash-forge[argon2]"
+   hash_manager = HashManager.from_policy(PasswordHashPolicy.recommended())
    ```
 
 2. **BCrypt** - Industry standard, battle-tested
@@ -87,7 +84,7 @@ Hash Forge enforces these minimum security thresholds:
 | BCrypt | rounds | 12 | 14 |
 | Scrypt | N (CPU cost) | 16384 | 32768 |
 | Argon2 | time_cost | 2 | 3-4 |
-| Argon2 | memory_cost | 65536 | 65536-131072 |
+| Argon2 | memory_cost | 32768 | 65536-131072 |
 
 **Note**: Attempting to use weaker parameters will raise a validation error.
 
@@ -99,6 +96,7 @@ from hash_forge import HashManager
 from fastapi import FastAPI
 
 app = FastAPI()
+# Requires: pip install "hash-forge[argon2]"
 hash_manager = HashManager.from_algorithms("argon2")
 
 @app.post("/register")
@@ -220,7 +218,7 @@ pip install --upgrade hash-forge[bcrypt,argon2,crypto,blake3]
 Hash Forge follows security best practices:
 - ✅ No custom cryptography - uses proven libraries
 - ✅ Type safety with mypy strict mode
-- ✅ Comprehensive test coverage (114+ tests)
+- ✅ Comprehensive test coverage (154+ tests)
 - ✅ Constant-time comparison for hash verification
 - ✅ Cryptographically secure random salt generation
 - ✅ Enforced minimum security parameters
@@ -229,9 +227,9 @@ Hash Forge follows security best practices:
 
 - [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 - [Argon2 RFC 9106](https://www.rfc-editor.org/rfc/rfc9106.html)
-- [NIST Password Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
+- [NIST Password Guidelines](https://pages.nist.gov/800-63-4/sp800-63b.html)
 
 ---
 
-**Last Updated**: October 2024
-**Hash Forge Version**: 3.0.1
+**Last Updated**: June 2026
+**Hash Forge Version**: 3.2.0

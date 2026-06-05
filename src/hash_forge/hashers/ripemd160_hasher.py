@@ -5,7 +5,8 @@ from hash_forge.core.protocols import PHasher
 
 
 class Ripemd160Hasher(PHasher):
-    algorithm: ClassVar[str] = "RIPEMD-160"
+    algorithm: ClassVar[str] = "ripemd160"
+    legacy_algorithm: ClassVar[str] = "RIPEMD-160"
     library_module: ClassVar[str] = "Crypto.Hash.RIPEMD160"
 
     def __init__(self) -> None:
@@ -31,6 +32,10 @@ class Ripemd160Hasher(PHasher):
         hashed.update(_string.encode())
         return f"{self.algorithm}${hashed.hexdigest()}"
 
+    def can_handle(self, hashed_string: str) -> bool:
+        """Accept canonical and legacy RIPEMD-160 prefixes."""
+        return hashed_string.startswith(f"{self.algorithm}$") or hashed_string.startswith(f"{self.legacy_algorithm}$")
+
     def verify(self, _string: str, _hashed: str, /) -> bool:
         """
         Verify if the provided string matches the given hashed value.
@@ -42,12 +47,15 @@ class Ripemd160Hasher(PHasher):
         Returns:
             bool: True if the string matches the hashed value, False otherwise.
         """
-        algorithm, hash_value = _hashed.split("$", 1)
-        if algorithm != self.algorithm:
+        try:
+            algorithm, hash_value = _hashed.split("$", 1)
+            if algorithm not in {self.algorithm, self.legacy_algorithm}:
+                return False
+            hashed = self.ripemd160.new()
+            hashed.update(_string.encode())
+            return hmac.compare_digest(hash_value, hashed.hexdigest())
+        except (ValueError, TypeError):
             return False
-        hashed = self.ripemd160.new()
-        hashed.update(_string.encode())
-        return hmac.compare_digest(hash_value, hashed.hexdigest())
 
     def needs_rehash(self, _hashed_string: str, /) -> bool:
         """
@@ -60,5 +68,8 @@ class Ripemd160Hasher(PHasher):
             bool: True if the algorithm used in the hashed string does not match
                   the current algorithm, indicating that a rehash is needed.
         """
-        algorithm, _ = _hashed_string.split("$", 1)
-        return algorithm != self.algorithm
+        try:
+            algorithm, _ = _hashed_string.split("$", 1)
+            return algorithm != self.algorithm
+        except (ValueError, TypeError):
+            return False
