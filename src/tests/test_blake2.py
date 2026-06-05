@@ -36,7 +36,7 @@ def test_hash_creation(blake2_hasher: Blake2Hasher) -> None:
     _string = "example_password"
     hashed_value = blake2_hasher.hash(_string)
 
-    assert hashed_value.startswith("blake2b$")
+    assert hashed_value.startswith("blake2$")
     assert len(hashed_value.split("$")) == 3
 
 
@@ -58,6 +58,14 @@ def test_verify_hash_correct(blake2_hasher: Blake2Hasher) -> None:
     hashed_value = blake2_hasher.hash(_string)
 
     assert blake2_hasher.verify(_string, hashed_value) is True
+
+
+def test_legacy_blake2b_prefix_still_verifies(blake2_hasher: Blake2Hasher) -> None:
+    _string = "example_password"
+    hashed_value = blake2_hasher.hash(_string).replace("blake2$", "blake2b$", 1)
+
+    assert blake2_hasher.verify(_string, hashed_value) is True
+    assert blake2_hasher.needs_rehash(hashed_value) is True
 
 
 def test_verify_hash_incorrect(blake2_hasher: Blake2Hasher) -> None:

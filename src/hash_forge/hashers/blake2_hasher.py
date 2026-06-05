@@ -7,9 +7,10 @@ from hash_forge.core.protocols import PHasher
 
 
 class Blake2Hasher(PHasher):
-    algorithm: ClassVar[str] = 'blake2b'
+    algorithm: ClassVar[str] = 'blake2'
+    legacy_algorithm: ClassVar[str] = 'blake2b'
 
-    def __init__(self, key: str, digest_size: int = 64) -> None:
+    def __init__(self, key: str = "", digest_size: int = 64) -> None:
         """
         Initializes the Blake2Hasher with a key and an optional digest size.
 
@@ -38,6 +39,10 @@ class Blake2Hasher(PHasher):
         hashed_hex: str = binascii.hexlify(hashed).decode('ascii')
         return f'{self.algorithm}${self.digest_size}${hashed_hex}'
 
+    def can_handle(self, hashed_string: str) -> bool:
+        """Accept canonical and legacy BLAKE2b prefixes."""
+        return hashed_string.startswith(f"{self.algorithm}$") or hashed_string.startswith(f"{self.legacy_algorithm}$")
+
     def verify(self, _string: str, _hashed_string: str, /) -> bool:
         """
         Verifies if a given string matches the hashed string using BLAKE2b.
@@ -51,7 +56,7 @@ class Blake2Hasher(PHasher):
         """
         try:
             algorithm, digest_size, hashed_val = _hashed_string.split('$', 2)
-            if algorithm != self.algorithm or int(digest_size) != self.digest_size:
+            if algorithm not in {self.algorithm, self.legacy_algorithm} or int(digest_size) != self.digest_size:
                 return False
             hasher = hashlib.blake2b(digest_size=int(digest_size), key=self.key.encode())
             hasher.update(_string.encode())
@@ -71,7 +76,7 @@ class Blake2Hasher(PHasher):
             bool: True if the hashed string needs to be rehashed, False otherwise.
         """
         try:
-            _, digest_size, _ = _hashed_string.split('$', 2)
-            return int(digest_size) != self.digest_size
+            algorithm, digest_size, _ = _hashed_string.split('$', 2)
+            return algorithm != self.algorithm or int(digest_size) != self.digest_size
         except ValueError:
             return False

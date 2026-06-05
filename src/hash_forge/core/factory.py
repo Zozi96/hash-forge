@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from typing import Any, TypeVar, cast
+from warnings import warn
 
 from hash_forge.core.protocols import PHasher
 from hash_forge.exceptions import UnsupportedAlgorithmError
@@ -14,6 +15,7 @@ class HasherFactory:
     """Factory class for creating hasher instances."""
 
     _registry: dict[str, type[PHasher]] = {}
+    _aliases: dict[str, str] = {}
 
     @classmethod
     def register(cls, algorithm: AlgorithmType) -> Any:
@@ -48,6 +50,11 @@ class HasherFactory:
         cls._registry[algorithm] = hasher_class
 
     @classmethod
+    def register_alias(cls, alias: str, canonical: str) -> None:
+        """Register a backward-compatible or documented alias."""
+        cls._aliases[alias] = canonical
+
+    @classmethod
     def create(cls, algorithm: AlgorithmType, **kwargs: Any) -> PHasher:
         """Create a hasher instance for the specified algorithm.
 
@@ -61,10 +68,17 @@ class HasherFactory:
         Raises:
             UnsupportedAlgorithmError: If the algorithm is not supported
         """
-        if algorithm not in cls._registry:
+        canonical = cls._aliases.get(algorithm, algorithm)
+        if canonical != algorithm:
+            warn(
+                f"Algorithm '{algorithm}' is deprecated; use '{canonical}' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if canonical not in cls._registry:
             raise UnsupportedAlgorithmError(f"Algorithm '{algorithm}' is not supported")
 
-        hasher_class = cls._registry[algorithm]
+        hasher_class = cls._registry[canonical]
         return hasher_class(**kwargs)
 
     @classmethod
@@ -102,6 +116,11 @@ def register_default_hashers() -> None:
         except ImportError:
             # Silently skip if optional dependencies are not installed
             pass
+
+    if "blake2" in HasherFactory._registry:
+        HasherFactory.register_alias("blake2b", "blake2")
+    if "ripemd160" in HasherFactory._registry:
+        HasherFactory.register_alias("RIPEMD-160", "ripemd160")
 
 
 # Register default hashers on import

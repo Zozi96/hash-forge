@@ -16,6 +16,7 @@ Hash Forge is a flexible and secure hash management tool that supports multiple 
 - **Configuration Management**: Load settings from environment variables, JSON files, or code.
 - **Hashing and Verification**: Easily hash strings and verify their integrity.
 - **Hash Rotation**: Seamlessly migrate hashes to a new algorithm with `rotate()`.
+- **Password Policies**: Use `PasswordHashPolicy` profiles for safe defaults and `verify_and_update()`.
 - **Hash Inspection**: Retrieve algorithm metadata from any hash with `inspect()`.
 - **Rehash Detection**: Automatically detects if a hash needs to be rehashed based on outdated parameters or algorithms.
 - **Type-Safe API**: Full TypeScript-like type hints with `AlgorithmType` for better IDE support.
@@ -59,8 +60,8 @@ Hash Forge provides optional dependencies for specific hashing algorithms. To in
 ```python
 from hash_forge import HashManager
 
-# Create a HashManager with Argon2 (recommended)
-hash_manager = HashManager.from_algorithms("argon2")
+# Base install works with PBKDF2-SHA256
+hash_manager = HashManager.from_algorithms("pbkdf2_sha256")
 
 # Hash a password
 hashed = hash_manager.hash("my_secure_password")
@@ -157,12 +158,30 @@ Currently supported algorithms with their `AlgorithmType` identifiers:
 | **bcrypt-SHA256** | `"bcrypt_sha256"` | High | With SHA256 pre-hashing |
 | **Argon2** | `"argon2"` | Very High | Memory-hard function |
 | **Scrypt** | `"scrypt"` | High | Memory-hard function |
-| **Blake2** | `"blake2"` | High | Fast cryptographic hash |
-| **Blake3** | `"blake3"` | Very High | Latest Blake variant |
-| **SHA-3 256** | `"sha3_256"` | High | stdlib only, no extra dependencies |
-| **SHA-3 512** | `"sha3_512"` | High | stdlib only, no extra dependencies |
-| **Whirlpool** | `"whirlpool"` | Medium | 512-bit hash |
-| **RIPEMD-160** | `"ripemd160"` | Medium | 160-bit hash |
+| **Blake2** | `"blake2"` | Digest only | Fast cryptographic hash, not password hashing |
+| **Blake3** | `"blake3"` | Digest only | Fast cryptographic hash, not password hashing |
+| **SHA-3 256** | `"sha3_256"` | Digest only | stdlib only, no extra dependencies |
+| **SHA-3 512** | `"sha3_512"` | Digest only | stdlib only, no extra dependencies |
+| **Whirlpool** | `"whirlpool"` | Deprecated | Legacy compatibility only; new hashing disabled by default |
+| **RIPEMD-160** | `"ripemd160"` | Legacy | 160-bit legacy digest |
+
+### Password Policy API
+
+```python
+from hash_forge import HashManager, PasswordHashPolicy
+
+# Requires: pip install "hash-forge[argon2]"
+hash_manager = HashManager.from_policy(PasswordHashPolicy.recommended())
+hashed = hash_manager.hash("my_secure_password")
+
+ok, replacement_hash = hash_manager.verify_and_update("my_secure_password", hashed)
+if replacement_hash is not None:
+    # Store replacement_hash; parameters or preferred algorithm changed.
+    ...
+```
+
+Use `PasswordHashPolicy.fips()` when you need a PBKDF2-HMAC-SHA256 profile, or
+`PasswordHashPolicy.legacy_compat()` when migrating older stored hashes.
 
 ### Algorithm-Specific Parameters
 
@@ -183,7 +202,7 @@ HashManager.quick_hash("password", algorithm="bcrypt_sha256", rounds=12)
 HashManager.quick_hash("password", algorithm="argon2", time_cost=4, memory_cost=65536, parallelism=1)
 
 # Scrypt
-HashManager.quick_hash("password", algorithm="scrypt", n=32768, r=8, p=1)
+HashManager.quick_hash("password", algorithm="scrypt", work_factor=32768, block_size=8, parallelism=1)
 
 # Blake2 (with optional key)
 HashManager.quick_hash("password", algorithm="blake2", key="secret_key")
@@ -195,8 +214,7 @@ HashManager.quick_hash("password", algorithm="blake3", key="secret_key")
 HashManager.quick_hash("password", algorithm="sha3_256")
 HashManager.quick_hash("password", algorithm="sha3_512")
 
-# Other algorithms (use defaults)
-HashManager.quick_hash("password", algorithm="whirlpool")
+# Legacy digest (new Whirlpool hashing is disabled by default)
 HashManager.quick_hash("password", algorithm="ripemd160")
 ```
 
@@ -215,7 +233,6 @@ from hash_forge.hashers import (
     ScryptHasher,
     SHA3_256Hasher,
     SHA3_512Hasher,
-    WhirlpoolHasher,
     Blake3Hasher
 )
 
@@ -228,7 +245,6 @@ hash_manager = HashManager(
     SHA3_512Hasher(),
     Ripemd160Hasher(),
     Blake2Hasher('MySecretKey'),
-    WhirlpoolHasher(),
     Blake3Hasher()
 )
 ```
@@ -284,11 +300,11 @@ hash_manager = HashManager(PBKDF2Sha256Hasher(), SHA3_256Hasher())
 
 pbkdf2_hash = HashManager.quick_hash("password", algorithm="pbkdf2_sha256", iterations=200_000)
 print(hash_manager.inspect(pbkdf2_hash))
-# {'algorithm': 'pbkdf2_sha256', 'iterations': 200000}
+# {'algorithm': 'pbkdf2_sha256', 'category': 'password', 'deprecated': False, 'iterations': 200000}
 
 sha3_hash = HashManager.quick_hash("password", algorithm="sha3_256")
 print(hash_manager.inspect(sha3_hash))
-# {'algorithm': 'sha3_256'}
+# {'algorithm': 'sha3_256', 'category': 'digest', 'deprecated': False}
 
 print(hash_manager.inspect("unknown$abc$def"))
 # None
@@ -321,6 +337,8 @@ print(repr(hash_manager))
 ### Async Support (New in v3.0.0)
 
 Hash Forge provides full async/await support for non-blocking operations. All synchronous methods have async equivalents that run in a thread pool executor to avoid blocking the event loop.
+
+Examples using Argon2 require `pip install "hash-forge[argon2]"`.
 
 #### Basic Async Operations
 

@@ -45,7 +45,7 @@ class SHA3Hasher(BaseHasher):
     def _parse_hash(self, hashed_string: str) -> dict[str, Any] | None:
         """Parse hash format: ``algorithm$salt$hash``."""
         parsed = SimpleHashParser.parse_dollar_separated(hashed_string, 3)
-        if parsed and len(parsed["parts"]) >= 2:
+        if parsed and len(parsed["parts"]) == 2:
             return {
                 "algorithm": parsed["algorithm"],
                 "salt": parsed["parts"][0],

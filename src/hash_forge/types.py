@@ -11,9 +11,11 @@ AlgorithmType = Literal[
     "argon2",
     "scrypt",
     "blake2",
+    "blake2b",
     "blake3",
     "whirlpool",
     "ripemd160",
+    "RIPEMD-160",
     "sha3_256",
     "sha3_512",
 ]

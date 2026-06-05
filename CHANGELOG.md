@@ -5,6 +5,27 @@ All notable changes to Hash Forge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-06-05
+
+### Added
+- `PasswordHashPolicy` profiles for recommended, FIPS, legacy compatibility, and calibrated password hashing.
+- `HashManager.from_policy()` and `verify_and_update()` for safer password migration flows.
+- Algorithm classification helpers: `classify_algorithm()` and `canonical_algorithm()`.
+
+### Fixed
+- Exact algorithm dispatch now prevents `bcrypt_sha256` hashes from routing to plain `bcrypt`.
+- `HashManager.list_algorithms()` and `repr()` now preserve insertion order.
+- PBKDF2 and SHA-3 parsers now reject non-canonical hashes with trailing fields.
+- Scrypt now validates constructor and stored-hash parameters and rejects costs outside verification bounds.
+- `HashForgeConfig.get_hasher_config("scrypt")` now passes the correct constructor keywords.
+- Public identifiers now support canonical `blake2` and `ripemd160`, with legacy aliases retained.
+- `WhirlpoolHasher` is deprecated and blocks new hashing unless explicitly enabled for legacy compatibility.
+- Version metadata is synchronized at `3.2.0`.
+
+### Changed
+- Enforced documented minimums for PBKDF2, BCrypt, Argon2, and Scrypt.
+- CI now runs lint, mypy, tests, coverage, build, and wheel smoke install checks.
+
 ## [3.0.1] - 2024-10-03
 
 ### Added

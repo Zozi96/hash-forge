@@ -171,7 +171,7 @@ class SimpleHashParser:
         """
         with suppress(ValueError, IndexError):
             parts = hashed_string.split('$')
-            if len(parts) >= expected_parts:
+            if len(parts) == expected_parts:
                 return {
                     'algorithm': parts[0],
                     'parts': parts[1:]

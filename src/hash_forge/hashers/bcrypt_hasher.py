@@ -32,10 +32,10 @@ class BCryptSha256Hasher(BaseHasher):
 
     def _parse_hash(self, hashed_string: str) -> dict[str, Any] | None:
         """Parse BCrypt hash format: algorithm$version$rounds$salt_hash."""
-        parsed = SimpleHashParser.parse_dollar_separated(hashed_string, 2)
+        parsed = SimpleHashParser.parse_dollar_separated(hashed_string, 4)
         if parsed:
             parts = parsed['parts']
-            if len(parts) >= 3:
+            if len(parts) == 3:
                 # BCrypt format: version$rounds$salt_hash
                 # parts[0] = version (e.g., '2b')
                 # parts[1] = rounds (e.g., '12')

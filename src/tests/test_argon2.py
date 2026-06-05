@@ -86,7 +86,7 @@ def test_argon2_needs_rehash_true(argon2_hasher: Argon2Hasher) -> None:
                         generated with a lower time cost.
     """
     data = "TestData123!"
-    old_hasher = Argon2Hasher(time_cost=1)
+    old_hasher = Argon2Hasher(time_cost=2)
     old_hashed = old_hasher.hash(data)
     assert (
         argon2_hasher.needs_rehash(old_hashed) is True

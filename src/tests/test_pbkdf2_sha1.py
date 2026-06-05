@@ -11,7 +11,7 @@ def pbkdf2_hasher() -> PBKDF2Sha1Hasher:
     Returns:
         PBKDF2Sha1Hasher: An instance of PBKDF2Sha1Hasher configured with 100,000 iterations.
     """
-    return PBKDF2Sha1Hasher(iterations=100_000)
+    return PBKDF2Sha1Hasher(iterations=150_000)
 
 
 def test_pbkdf2_hash_format(pbkdf2_hasher: PBKDF2Sha1Hasher) -> None:
@@ -34,7 +34,7 @@ def test_pbkdf2_hash_format(pbkdf2_hasher: PBKDF2Sha1Hasher) -> None:
     parts: list[str] = hashed.split('$')
     assert len(parts) == 4
     assert parts[0] == 'pbkdf2_sha1'
-    assert int(parts[1]) == 100_000
+    assert int(parts[1]) == 150_000
 
 
 def test_pbkdf2_verify_correct_data(pbkdf2_hasher: PBKDF2Sha1Hasher) -> None:
@@ -106,8 +106,7 @@ def test_pbkdf2_needs_rehash_true(pbkdf2_hasher: PBKDF2Sha1Hasher) -> None:
         True if the `needs_rehash` method correctly identifies that the old hash
         needs rehashing.
     """
-    old_hasher = PBKDF2Sha1Hasher(iterations=120_000)
-    old_hashed: str = old_hasher.hash("TestData123!")
+    old_hashed = "pbkdf2_sha1$120000$salt$83ad5b43ffa6d18e7e0034858a3c3676c551db8e"
     assert pbkdf2_hasher.needs_rehash(old_hashed) is True
 
 

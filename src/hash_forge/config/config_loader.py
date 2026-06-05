@@ -205,9 +205,9 @@ class HashForgeConfig:
             }
         elif algorithm == 'scrypt':
             return {
-                'n': self.scrypt_n,
-                'r': self.scrypt_r,
-                'p': self.scrypt_p,
+                'work_factor': self.scrypt_n,
+                'block_size': self.scrypt_r,
+                'parallelism': self.scrypt_p,
             }
         else:
             return {}
